@@ -4,3 +4,5 @@
 *.jar
 *.war
 *.ear
+/Proyecto/ITIL/nbproject/private/
+/Proyecto/ITIL/build/

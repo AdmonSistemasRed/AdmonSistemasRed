@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence version="2.1" xmlns="http://xmlns.jcp.org/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd">
+  <persistence-unit name="It_ITILPU" transaction-type="RESOURCE_LOCAL">
+    <provider>org.eclipse.persistence.jpa.PersistenceProvider</provider>
+    <class>JPA.Entidades.Area</class>
+    <class>JPA.Entidades.Depto</class>
+    <class>JPA.Entidades.Empleado</class>
+    <class>JPA.Entidades.ItItem</class>
+    <class>JPA.Entidades.Laptops</class>
+    <class>JPA.Entidades.Lenguaje</class>
+    <class>JPA.Entidades.Perifericos</class>
+    <class>JPA.Entidades.Roles</class>
+    <class>JPA.Entidades.Servidor</class>
+    <class>JPA.Entidades.Software</class>
+    <class>JPA.Entidades.Telecommunications</class>
+    <class>JPA.Entidades.Workstation</class>
+    <exclude-unlisted-classes>false</exclude-unlisted-classes>
+    <properties>
+      <property name="javax.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/cmdb?zeroDateTimeBehavior=convertToNull"/>
+      <property name="javax.persistence.jdbc.password" value="carlos787"/>
+      <property name="javax.persistence.jdbc.driver" value="com.mysql.jdbc.Driver"/>
+      <property name="javax.persistence.jdbc.user" value="root"/>
+      <property name="javax.persistence.schema-generation.database.action" value="create"/>
+    </properties>
+  </persistence-unit>
+</persistence>
