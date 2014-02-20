@@ -11,25 +11,22 @@ import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import JPA.Entidades.Empleado;
+import JPA.Entidades.Computadora;
 import JPA.Entidades.ItItem;
-import JPA.Entidades.ItItemPK;
-import java.util.ArrayList;
-import java.util.Collection;
-import JPA.Entidades.Servidor;
-import JPA.Entidades.Software;
 import JPA.Entidades.Telecommunications;
 import JPA.Entidades.Perifericos;
-import JPA.Entidades.Laptops;
-import JPA.Entidades.Workstation;
+import JPA.Entidades.ItItemHasEmpleado;
 import JPA.Entidades_Controllers.exceptions.IllegalOrphanException;
 import JPA.Entidades_Controllers.exceptions.NonexistentEntityException;
 import JPA.Entidades_Controllers.exceptions.PreexistingEntityException;
 import JPA.Entidades_Controllers.exceptions.RollbackFailureException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.transaction.UserTransaction;
 
 /**
  *
@@ -42,138 +39,59 @@ public class ItItemJpaController implements Serializable {
     private EntityManagerFactory emf = null;
 
     public EntityManager getEntityManager() {
-        emf = Persistence.createEntityManagerFactory("It_ITILPU");
+        emf = Persistence.createEntityManagerFactory("ITILPU");
         return emf.createEntityManager();
     }
 
     public void create(ItItem itItem) throws PreexistingEntityException, RollbackFailureException, Exception {
-        if (itItem.getItItemPK() == null) {
-            itItem.setItItemPK(new ItItemPK());
-        }
-        if (itItem.getEmpleadoCollection() == null) {
-            itItem.setEmpleadoCollection(new ArrayList<Empleado>());
-        }
-        if (itItem.getServidorCollection() == null) {
-            itItem.setServidorCollection(new ArrayList<Servidor>());
-        }
-        if (itItem.getSoftwareCollection() == null) {
-            itItem.setSoftwareCollection(new ArrayList<Software>());
-        }
-        if (itItem.getTelecommunicationsCollection() == null) {
-            itItem.setTelecommunicationsCollection(new ArrayList<Telecommunications>());
-        }
-        if (itItem.getPerifericosCollection() == null) {
-            itItem.setPerifericosCollection(new ArrayList<Perifericos>());
-        }
-        if (itItem.getLaptopsCollection() == null) {
-            itItem.setLaptopsCollection(new ArrayList<Laptops>());
-        }
-        if (itItem.getWorkstationCollection() == null) {
-            itItem.setWorkstationCollection(new ArrayList<Workstation>());
+        if (itItem.getItItemHasEmpleadoCollection() == null) {
+            itItem.setItItemHasEmpleadoCollection(new ArrayList<ItItemHasEmpleado>());
         }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            Collection<Empleado> attachedEmpleadoCollection = new ArrayList<Empleado>();
-            for (Empleado empleadoCollectionEmpleadoToAttach : itItem.getEmpleadoCollection()) {
-                empleadoCollectionEmpleadoToAttach = em.getReference(empleadoCollectionEmpleadoToAttach.getClass(), empleadoCollectionEmpleadoToAttach.getEmpNoEmpleado());
-                attachedEmpleadoCollection.add(empleadoCollectionEmpleadoToAttach);
+            Computadora computadoraidComputadora = itItem.getComputadoraidComputadora();
+            if (computadoraidComputadora != null) {
+                computadoraidComputadora = em.getReference(computadoraidComputadora.getClass(), computadoraidComputadora.getIdComputadora());
+                itItem.setComputadoraidComputadora(computadoraidComputadora);
             }
-            itItem.setEmpleadoCollection(attachedEmpleadoCollection);
-            Collection<Servidor> attachedServidorCollection = new ArrayList<Servidor>();
-            for (Servidor servidorCollectionServidorToAttach : itItem.getServidorCollection()) {
-                servidorCollectionServidorToAttach = em.getReference(servidorCollectionServidorToAttach.getClass(), servidorCollectionServidorToAttach.getIdServidor());
-                attachedServidorCollection.add(servidorCollectionServidorToAttach);
+            Telecommunications telecommunicationsidTelecom = itItem.getTelecommunicationsidTelecom();
+            if (telecommunicationsidTelecom != null) {
+                telecommunicationsidTelecom = em.getReference(telecommunicationsidTelecom.getClass(), telecommunicationsidTelecom.getIdTelecom());
+                itItem.setTelecommunicationsidTelecom(telecommunicationsidTelecom);
             }
-            itItem.setServidorCollection(attachedServidorCollection);
-            Collection<Software> attachedSoftwareCollection = new ArrayList<Software>();
-            for (Software softwareCollectionSoftwareToAttach : itItem.getSoftwareCollection()) {
-                softwareCollectionSoftwareToAttach = em.getReference(softwareCollectionSoftwareToAttach.getClass(), softwareCollectionSoftwareToAttach.getIdSoftware());
-                attachedSoftwareCollection.add(softwareCollectionSoftwareToAttach);
+            Perifericos perifericosidPeriferico = itItem.getPerifericosidPeriferico();
+            if (perifericosidPeriferico != null) {
+                perifericosidPeriferico = em.getReference(perifericosidPeriferico.getClass(), perifericosidPeriferico.getIdPeriferico());
+                itItem.setPerifericosidPeriferico(perifericosidPeriferico);
             }
-            itItem.setSoftwareCollection(attachedSoftwareCollection);
-            Collection<Telecommunications> attachedTelecommunicationsCollection = new ArrayList<Telecommunications>();
-            for (Telecommunications telecommunicationsCollectionTelecommunicationsToAttach : itItem.getTelecommunicationsCollection()) {
-                telecommunicationsCollectionTelecommunicationsToAttach = em.getReference(telecommunicationsCollectionTelecommunicationsToAttach.getClass(), telecommunicationsCollectionTelecommunicationsToAttach.getIdTelecom());
-                attachedTelecommunicationsCollection.add(telecommunicationsCollectionTelecommunicationsToAttach);
+            Collection<ItItemHasEmpleado> attachedItItemHasEmpleadoCollection = new ArrayList<ItItemHasEmpleado>();
+            for (ItItemHasEmpleado itItemHasEmpleadoCollectionItItemHasEmpleadoToAttach : itItem.getItItemHasEmpleadoCollection()) {
+                itItemHasEmpleadoCollectionItItemHasEmpleadoToAttach = em.getReference(itItemHasEmpleadoCollectionItItemHasEmpleadoToAttach.getClass(), itItemHasEmpleadoCollectionItItemHasEmpleadoToAttach.getItItemHasEmpleadoPK());
+                attachedItItemHasEmpleadoCollection.add(itItemHasEmpleadoCollectionItItemHasEmpleadoToAttach);
             }
-            itItem.setTelecommunicationsCollection(attachedTelecommunicationsCollection);
-            Collection<Perifericos> attachedPerifericosCollection = new ArrayList<Perifericos>();
-            for (Perifericos perifericosCollectionPerifericosToAttach : itItem.getPerifericosCollection()) {
-                perifericosCollectionPerifericosToAttach = em.getReference(perifericosCollectionPerifericosToAttach.getClass(), perifericosCollectionPerifericosToAttach.getIdPeriferico());
-                attachedPerifericosCollection.add(perifericosCollectionPerifericosToAttach);
-            }
-            itItem.setPerifericosCollection(attachedPerifericosCollection);
-            Collection<Laptops> attachedLaptopsCollection = new ArrayList<Laptops>();
-            for (Laptops laptopsCollectionLaptopsToAttach : itItem.getLaptopsCollection()) {
-                laptopsCollectionLaptopsToAttach = em.getReference(laptopsCollectionLaptopsToAttach.getClass(), laptopsCollectionLaptopsToAttach.getIdLaptop());
-                attachedLaptopsCollection.add(laptopsCollectionLaptopsToAttach);
-            }
-            itItem.setLaptopsCollection(attachedLaptopsCollection);
-            Collection<Workstation> attachedWorkstationCollection = new ArrayList<Workstation>();
-            for (Workstation workstationCollectionWorkstationToAttach : itItem.getWorkstationCollection()) {
-                workstationCollectionWorkstationToAttach = em.getReference(workstationCollectionWorkstationToAttach.getClass(), workstationCollectionWorkstationToAttach.getIdWorkstation());
-                attachedWorkstationCollection.add(workstationCollectionWorkstationToAttach);
-            }
-            itItem.setWorkstationCollection(attachedWorkstationCollection);
+            itItem.setItItemHasEmpleadoCollection(attachedItItemHasEmpleadoCollection);
             em.persist(itItem);
-            for (Empleado empleadoCollectionEmpleado : itItem.getEmpleadoCollection()) {
-                empleadoCollectionEmpleado.getItItemCollection().add(itItem);
-                empleadoCollectionEmpleado = em.merge(empleadoCollectionEmpleado);
+            if (computadoraidComputadora != null) {
+                computadoraidComputadora.getItItemCollection().add(itItem);
+                computadoraidComputadora = em.merge(computadoraidComputadora);
             }
-            for (Servidor servidorCollectionServidor : itItem.getServidorCollection()) {
-                ItItem oldItItemOfServidorCollectionServidor = servidorCollectionServidor.getItItem();
-                servidorCollectionServidor.setItItem(itItem);
-                servidorCollectionServidor = em.merge(servidorCollectionServidor);
-                if (oldItItemOfServidorCollectionServidor != null) {
-                    oldItItemOfServidorCollectionServidor.getServidorCollection().remove(servidorCollectionServidor);
-                    oldItItemOfServidorCollectionServidor = em.merge(oldItItemOfServidorCollectionServidor);
-                }
+            if (telecommunicationsidTelecom != null) {
+                telecommunicationsidTelecom.getItItemCollection().add(itItem);
+                telecommunicationsidTelecom = em.merge(telecommunicationsidTelecom);
             }
-            for (Software softwareCollectionSoftware : itItem.getSoftwareCollection()) {
-                ItItem oldItItemOfSoftwareCollectionSoftware = softwareCollectionSoftware.getItItem();
-                softwareCollectionSoftware.setItItem(itItem);
-                softwareCollectionSoftware = em.merge(softwareCollectionSoftware);
-                if (oldItItemOfSoftwareCollectionSoftware != null) {
-                    oldItItemOfSoftwareCollectionSoftware.getSoftwareCollection().remove(softwareCollectionSoftware);
-                    oldItItemOfSoftwareCollectionSoftware = em.merge(oldItItemOfSoftwareCollectionSoftware);
-                }
+            if (perifericosidPeriferico != null) {
+                perifericosidPeriferico.getItItemCollection().add(itItem);
+                perifericosidPeriferico = em.merge(perifericosidPeriferico);
             }
-            for (Telecommunications telecommunicationsCollectionTelecommunications : itItem.getTelecommunicationsCollection()) {
-                ItItem oldItItemOfTelecommunicationsCollectionTelecommunications = telecommunicationsCollectionTelecommunications.getItItem();
-                telecommunicationsCollectionTelecommunications.setItItem(itItem);
-                telecommunicationsCollectionTelecommunications = em.merge(telecommunicationsCollectionTelecommunications);
-                if (oldItItemOfTelecommunicationsCollectionTelecommunications != null) {
-                    oldItItemOfTelecommunicationsCollectionTelecommunications.getTelecommunicationsCollection().remove(telecommunicationsCollectionTelecommunications);
-                    oldItItemOfTelecommunicationsCollectionTelecommunications = em.merge(oldItItemOfTelecommunicationsCollectionTelecommunications);
-                }
-            }
-            for (Perifericos perifericosCollectionPerifericos : itItem.getPerifericosCollection()) {
-                ItItem oldItItemOfPerifericosCollectionPerifericos = perifericosCollectionPerifericos.getItItem();
-                perifericosCollectionPerifericos.setItItem(itItem);
-                perifericosCollectionPerifericos = em.merge(perifericosCollectionPerifericos);
-                if (oldItItemOfPerifericosCollectionPerifericos != null) {
-                    oldItItemOfPerifericosCollectionPerifericos.getPerifericosCollection().remove(perifericosCollectionPerifericos);
-                    oldItItemOfPerifericosCollectionPerifericos = em.merge(oldItItemOfPerifericosCollectionPerifericos);
-                }
-            }
-            for (Laptops laptopsCollectionLaptops : itItem.getLaptopsCollection()) {
-                ItItem oldItItemOfLaptopsCollectionLaptops = laptopsCollectionLaptops.getItItem();
-                laptopsCollectionLaptops.setItItem(itItem);
-                laptopsCollectionLaptops = em.merge(laptopsCollectionLaptops);
-                if (oldItItemOfLaptopsCollectionLaptops != null) {
-                    oldItItemOfLaptopsCollectionLaptops.getLaptopsCollection().remove(laptopsCollectionLaptops);
-                    oldItItemOfLaptopsCollectionLaptops = em.merge(oldItItemOfLaptopsCollectionLaptops);
-                }
-            }
-            for (Workstation workstationCollectionWorkstation : itItem.getWorkstationCollection()) {
-                ItItem oldItItemOfWorkstationCollectionWorkstation = workstationCollectionWorkstation.getItItem();
-                workstationCollectionWorkstation.setItItem(itItem);
-                workstationCollectionWorkstation = em.merge(workstationCollectionWorkstation);
-                if (oldItItemOfWorkstationCollectionWorkstation != null) {
-                    oldItItemOfWorkstationCollectionWorkstation.getWorkstationCollection().remove(workstationCollectionWorkstation);
-                    oldItItemOfWorkstationCollectionWorkstation = em.merge(oldItItemOfWorkstationCollectionWorkstation);
+            for (ItItemHasEmpleado itItemHasEmpleadoCollectionItItemHasEmpleado : itItem.getItItemHasEmpleadoCollection()) {
+                ItItem oldItItemOfItItemHasEmpleadoCollectionItItemHasEmpleado = itItemHasEmpleadoCollectionItItemHasEmpleado.getItItem();
+                itItemHasEmpleadoCollectionItItemHasEmpleado.setItItem(itItem);
+                itItemHasEmpleadoCollectionItItemHasEmpleado = em.merge(itItemHasEmpleadoCollectionItItemHasEmpleado);
+                if (oldItItemOfItItemHasEmpleadoCollectionItItemHasEmpleado != null) {
+                    oldItItemOfItItemHasEmpleadoCollectionItItemHasEmpleado.getItItemHasEmpleadoCollection().remove(itItemHasEmpleadoCollectionItItemHasEmpleado);
+                    oldItItemOfItItemHasEmpleadoCollectionItItemHasEmpleado = em.merge(oldItItemOfItItemHasEmpleadoCollectionItItemHasEmpleado);
                 }
             }
             em.getTransaction().commit();
@@ -183,7 +101,7 @@ public class ItItemJpaController implements Serializable {
             } catch (Exception re) {
                 throw new RollbackFailureException("An error occurred attempting to roll back the transaction.", re);
             }
-            if (findItItem(itItem.getItItemPK()) != null) {
+            if (findItItem(itItem.getItSerie()) != null) {
                 throw new PreexistingEntityException("ItItem " + itItem + " already exists.", ex);
             }
             throw ex;
@@ -199,198 +117,79 @@ public class ItItemJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            ItItem persistentItItem = em.find(ItItem.class, itItem.getItItemPK());
-            Collection<Empleado> empleadoCollectionOld = persistentItItem.getEmpleadoCollection();
-            Collection<Empleado> empleadoCollectionNew = itItem.getEmpleadoCollection();
-            Collection<Servidor> servidorCollectionOld = persistentItItem.getServidorCollection();
-            Collection<Servidor> servidorCollectionNew = itItem.getServidorCollection();
-            Collection<Software> softwareCollectionOld = persistentItItem.getSoftwareCollection();
-            Collection<Software> softwareCollectionNew = itItem.getSoftwareCollection();
-            Collection<Telecommunications> telecommunicationsCollectionOld = persistentItItem.getTelecommunicationsCollection();
-            Collection<Telecommunications> telecommunicationsCollectionNew = itItem.getTelecommunicationsCollection();
-            Collection<Perifericos> perifericosCollectionOld = persistentItItem.getPerifericosCollection();
-            Collection<Perifericos> perifericosCollectionNew = itItem.getPerifericosCollection();
-            Collection<Laptops> laptopsCollectionOld = persistentItItem.getLaptopsCollection();
-            Collection<Laptops> laptopsCollectionNew = itItem.getLaptopsCollection();
-            Collection<Workstation> workstationCollectionOld = persistentItItem.getWorkstationCollection();
-            Collection<Workstation> workstationCollectionNew = itItem.getWorkstationCollection();
+            ItItem persistentItItem = em.find(ItItem.class, itItem.getItSerie());
+            Computadora computadoraidComputadoraOld = persistentItItem.getComputadoraidComputadora();
+            Computadora computadoraidComputadoraNew = itItem.getComputadoraidComputadora();
+            Telecommunications telecommunicationsidTelecomOld = persistentItItem.getTelecommunicationsidTelecom();
+            Telecommunications telecommunicationsidTelecomNew = itItem.getTelecommunicationsidTelecom();
+            Perifericos perifericosidPerifericoOld = persistentItItem.getPerifericosidPeriferico();
+            Perifericos perifericosidPerifericoNew = itItem.getPerifericosidPeriferico();
+            Collection<ItItemHasEmpleado> itItemHasEmpleadoCollectionOld = persistentItItem.getItItemHasEmpleadoCollection();
+            Collection<ItItemHasEmpleado> itItemHasEmpleadoCollectionNew = itItem.getItItemHasEmpleadoCollection();
             List<String> illegalOrphanMessages = null;
-            for (Servidor servidorCollectionOldServidor : servidorCollectionOld) {
-                if (!servidorCollectionNew.contains(servidorCollectionOldServidor)) {
+            for (ItItemHasEmpleado itItemHasEmpleadoCollectionOldItItemHasEmpleado : itItemHasEmpleadoCollectionOld) {
+                if (!itItemHasEmpleadoCollectionNew.contains(itItemHasEmpleadoCollectionOldItItemHasEmpleado)) {
                     if (illegalOrphanMessages == null) {
                         illegalOrphanMessages = new ArrayList<String>();
                     }
-                    illegalOrphanMessages.add("You must retain Servidor " + servidorCollectionOldServidor + " since its itItem field is not nullable.");
-                }
-            }
-            for (Software softwareCollectionOldSoftware : softwareCollectionOld) {
-                if (!softwareCollectionNew.contains(softwareCollectionOldSoftware)) {
-                    if (illegalOrphanMessages == null) {
-                        illegalOrphanMessages = new ArrayList<String>();
-                    }
-                    illegalOrphanMessages.add("You must retain Software " + softwareCollectionOldSoftware + " since its itItem field is not nullable.");
-                }
-            }
-            for (Telecommunications telecommunicationsCollectionOldTelecommunications : telecommunicationsCollectionOld) {
-                if (!telecommunicationsCollectionNew.contains(telecommunicationsCollectionOldTelecommunications)) {
-                    if (illegalOrphanMessages == null) {
-                        illegalOrphanMessages = new ArrayList<String>();
-                    }
-                    illegalOrphanMessages.add("You must retain Telecommunications " + telecommunicationsCollectionOldTelecommunications + " since its itItem field is not nullable.");
-                }
-            }
-            for (Perifericos perifericosCollectionOldPerifericos : perifericosCollectionOld) {
-                if (!perifericosCollectionNew.contains(perifericosCollectionOldPerifericos)) {
-                    if (illegalOrphanMessages == null) {
-                        illegalOrphanMessages = new ArrayList<String>();
-                    }
-                    illegalOrphanMessages.add("You must retain Perifericos " + perifericosCollectionOldPerifericos + " since its itItem field is not nullable.");
-                }
-            }
-            for (Laptops laptopsCollectionOldLaptops : laptopsCollectionOld) {
-                if (!laptopsCollectionNew.contains(laptopsCollectionOldLaptops)) {
-                    if (illegalOrphanMessages == null) {
-                        illegalOrphanMessages = new ArrayList<String>();
-                    }
-                    illegalOrphanMessages.add("You must retain Laptops " + laptopsCollectionOldLaptops + " since its itItem field is not nullable.");
-                }
-            }
-            for (Workstation workstationCollectionOldWorkstation : workstationCollectionOld) {
-                if (!workstationCollectionNew.contains(workstationCollectionOldWorkstation)) {
-                    if (illegalOrphanMessages == null) {
-                        illegalOrphanMessages = new ArrayList<String>();
-                    }
-                    illegalOrphanMessages.add("You must retain Workstation " + workstationCollectionOldWorkstation + " since its itItem field is not nullable.");
+                    illegalOrphanMessages.add("You must retain ItItemHasEmpleado " + itItemHasEmpleadoCollectionOldItItemHasEmpleado + " since its itItem field is not nullable.");
                 }
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
-            Collection<Empleado> attachedEmpleadoCollectionNew = new ArrayList<Empleado>();
-            for (Empleado empleadoCollectionNewEmpleadoToAttach : empleadoCollectionNew) {
-                empleadoCollectionNewEmpleadoToAttach = em.getReference(empleadoCollectionNewEmpleadoToAttach.getClass(), empleadoCollectionNewEmpleadoToAttach.getEmpNoEmpleado());
-                attachedEmpleadoCollectionNew.add(empleadoCollectionNewEmpleadoToAttach);
+            if (computadoraidComputadoraNew != null) {
+                computadoraidComputadoraNew = em.getReference(computadoraidComputadoraNew.getClass(), computadoraidComputadoraNew.getIdComputadora());
+                itItem.setComputadoraidComputadora(computadoraidComputadoraNew);
             }
-            empleadoCollectionNew = attachedEmpleadoCollectionNew;
-            itItem.setEmpleadoCollection(empleadoCollectionNew);
-            Collection<Servidor> attachedServidorCollectionNew = new ArrayList<Servidor>();
-            for (Servidor servidorCollectionNewServidorToAttach : servidorCollectionNew) {
-                servidorCollectionNewServidorToAttach = em.getReference(servidorCollectionNewServidorToAttach.getClass(), servidorCollectionNewServidorToAttach.getIdServidor());
-                attachedServidorCollectionNew.add(servidorCollectionNewServidorToAttach);
+            if (telecommunicationsidTelecomNew != null) {
+                telecommunicationsidTelecomNew = em.getReference(telecommunicationsidTelecomNew.getClass(), telecommunicationsidTelecomNew.getIdTelecom());
+                itItem.setTelecommunicationsidTelecom(telecommunicationsidTelecomNew);
             }
-            servidorCollectionNew = attachedServidorCollectionNew;
-            itItem.setServidorCollection(servidorCollectionNew);
-            Collection<Software> attachedSoftwareCollectionNew = new ArrayList<Software>();
-            for (Software softwareCollectionNewSoftwareToAttach : softwareCollectionNew) {
-                softwareCollectionNewSoftwareToAttach = em.getReference(softwareCollectionNewSoftwareToAttach.getClass(), softwareCollectionNewSoftwareToAttach.getIdSoftware());
-                attachedSoftwareCollectionNew.add(softwareCollectionNewSoftwareToAttach);
+            if (perifericosidPerifericoNew != null) {
+                perifericosidPerifericoNew = em.getReference(perifericosidPerifericoNew.getClass(), perifericosidPerifericoNew.getIdPeriferico());
+                itItem.setPerifericosidPeriferico(perifericosidPerifericoNew);
             }
-            softwareCollectionNew = attachedSoftwareCollectionNew;
-            itItem.setSoftwareCollection(softwareCollectionNew);
-            Collection<Telecommunications> attachedTelecommunicationsCollectionNew = new ArrayList<Telecommunications>();
-            for (Telecommunications telecommunicationsCollectionNewTelecommunicationsToAttach : telecommunicationsCollectionNew) {
-                telecommunicationsCollectionNewTelecommunicationsToAttach = em.getReference(telecommunicationsCollectionNewTelecommunicationsToAttach.getClass(), telecommunicationsCollectionNewTelecommunicationsToAttach.getIdTelecom());
-                attachedTelecommunicationsCollectionNew.add(telecommunicationsCollectionNewTelecommunicationsToAttach);
+            Collection<ItItemHasEmpleado> attachedItItemHasEmpleadoCollectionNew = new ArrayList<ItItemHasEmpleado>();
+            for (ItItemHasEmpleado itItemHasEmpleadoCollectionNewItItemHasEmpleadoToAttach : itItemHasEmpleadoCollectionNew) {
+                itItemHasEmpleadoCollectionNewItItemHasEmpleadoToAttach = em.getReference(itItemHasEmpleadoCollectionNewItItemHasEmpleadoToAttach.getClass(), itItemHasEmpleadoCollectionNewItItemHasEmpleadoToAttach.getItItemHasEmpleadoPK());
+                attachedItItemHasEmpleadoCollectionNew.add(itItemHasEmpleadoCollectionNewItItemHasEmpleadoToAttach);
             }
-            telecommunicationsCollectionNew = attachedTelecommunicationsCollectionNew;
-            itItem.setTelecommunicationsCollection(telecommunicationsCollectionNew);
-            Collection<Perifericos> attachedPerifericosCollectionNew = new ArrayList<Perifericos>();
-            for (Perifericos perifericosCollectionNewPerifericosToAttach : perifericosCollectionNew) {
-                perifericosCollectionNewPerifericosToAttach = em.getReference(perifericosCollectionNewPerifericosToAttach.getClass(), perifericosCollectionNewPerifericosToAttach.getIdPeriferico());
-                attachedPerifericosCollectionNew.add(perifericosCollectionNewPerifericosToAttach);
-            }
-            perifericosCollectionNew = attachedPerifericosCollectionNew;
-            itItem.setPerifericosCollection(perifericosCollectionNew);
-            Collection<Laptops> attachedLaptopsCollectionNew = new ArrayList<Laptops>();
-            for (Laptops laptopsCollectionNewLaptopsToAttach : laptopsCollectionNew) {
-                laptopsCollectionNewLaptopsToAttach = em.getReference(laptopsCollectionNewLaptopsToAttach.getClass(), laptopsCollectionNewLaptopsToAttach.getIdLaptop());
-                attachedLaptopsCollectionNew.add(laptopsCollectionNewLaptopsToAttach);
-            }
-            laptopsCollectionNew = attachedLaptopsCollectionNew;
-            itItem.setLaptopsCollection(laptopsCollectionNew);
-            Collection<Workstation> attachedWorkstationCollectionNew = new ArrayList<Workstation>();
-            for (Workstation workstationCollectionNewWorkstationToAttach : workstationCollectionNew) {
-                workstationCollectionNewWorkstationToAttach = em.getReference(workstationCollectionNewWorkstationToAttach.getClass(), workstationCollectionNewWorkstationToAttach.getIdWorkstation());
-                attachedWorkstationCollectionNew.add(workstationCollectionNewWorkstationToAttach);
-            }
-            workstationCollectionNew = attachedWorkstationCollectionNew;
-            itItem.setWorkstationCollection(workstationCollectionNew);
+            itItemHasEmpleadoCollectionNew = attachedItItemHasEmpleadoCollectionNew;
+            itItem.setItItemHasEmpleadoCollection(itItemHasEmpleadoCollectionNew);
             itItem = em.merge(itItem);
-            for (Empleado empleadoCollectionOldEmpleado : empleadoCollectionOld) {
-                if (!empleadoCollectionNew.contains(empleadoCollectionOldEmpleado)) {
-                    empleadoCollectionOldEmpleado.getItItemCollection().remove(itItem);
-                    empleadoCollectionOldEmpleado = em.merge(empleadoCollectionOldEmpleado);
-                }
+            if (computadoraidComputadoraOld != null && !computadoraidComputadoraOld.equals(computadoraidComputadoraNew)) {
+                computadoraidComputadoraOld.getItItemCollection().remove(itItem);
+                computadoraidComputadoraOld = em.merge(computadoraidComputadoraOld);
             }
-            for (Empleado empleadoCollectionNewEmpleado : empleadoCollectionNew) {
-                if (!empleadoCollectionOld.contains(empleadoCollectionNewEmpleado)) {
-                    empleadoCollectionNewEmpleado.getItItemCollection().add(itItem);
-                    empleadoCollectionNewEmpleado = em.merge(empleadoCollectionNewEmpleado);
-                }
+            if (computadoraidComputadoraNew != null && !computadoraidComputadoraNew.equals(computadoraidComputadoraOld)) {
+                computadoraidComputadoraNew.getItItemCollection().add(itItem);
+                computadoraidComputadoraNew = em.merge(computadoraidComputadoraNew);
             }
-            for (Servidor servidorCollectionNewServidor : servidorCollectionNew) {
-                if (!servidorCollectionOld.contains(servidorCollectionNewServidor)) {
-                    ItItem oldItItemOfServidorCollectionNewServidor = servidorCollectionNewServidor.getItItem();
-                    servidorCollectionNewServidor.setItItem(itItem);
-                    servidorCollectionNewServidor = em.merge(servidorCollectionNewServidor);
-                    if (oldItItemOfServidorCollectionNewServidor != null && !oldItItemOfServidorCollectionNewServidor.equals(itItem)) {
-                        oldItItemOfServidorCollectionNewServidor.getServidorCollection().remove(servidorCollectionNewServidor);
-                        oldItItemOfServidorCollectionNewServidor = em.merge(oldItItemOfServidorCollectionNewServidor);
-                    }
-                }
+            if (telecommunicationsidTelecomOld != null && !telecommunicationsidTelecomOld.equals(telecommunicationsidTelecomNew)) {
+                telecommunicationsidTelecomOld.getItItemCollection().remove(itItem);
+                telecommunicationsidTelecomOld = em.merge(telecommunicationsidTelecomOld);
             }
-            for (Software softwareCollectionNewSoftware : softwareCollectionNew) {
-                if (!softwareCollectionOld.contains(softwareCollectionNewSoftware)) {
-                    ItItem oldItItemOfSoftwareCollectionNewSoftware = softwareCollectionNewSoftware.getItItem();
-                    softwareCollectionNewSoftware.setItItem(itItem);
-                    softwareCollectionNewSoftware = em.merge(softwareCollectionNewSoftware);
-                    if (oldItItemOfSoftwareCollectionNewSoftware != null && !oldItItemOfSoftwareCollectionNewSoftware.equals(itItem)) {
-                        oldItItemOfSoftwareCollectionNewSoftware.getSoftwareCollection().remove(softwareCollectionNewSoftware);
-                        oldItItemOfSoftwareCollectionNewSoftware = em.merge(oldItItemOfSoftwareCollectionNewSoftware);
-                    }
-                }
+            if (telecommunicationsidTelecomNew != null && !telecommunicationsidTelecomNew.equals(telecommunicationsidTelecomOld)) {
+                telecommunicationsidTelecomNew.getItItemCollection().add(itItem);
+                telecommunicationsidTelecomNew = em.merge(telecommunicationsidTelecomNew);
             }
-            for (Telecommunications telecommunicationsCollectionNewTelecommunications : telecommunicationsCollectionNew) {
-                if (!telecommunicationsCollectionOld.contains(telecommunicationsCollectionNewTelecommunications)) {
-                    ItItem oldItItemOfTelecommunicationsCollectionNewTelecommunications = telecommunicationsCollectionNewTelecommunications.getItItem();
-                    telecommunicationsCollectionNewTelecommunications.setItItem(itItem);
-                    telecommunicationsCollectionNewTelecommunications = em.merge(telecommunicationsCollectionNewTelecommunications);
-                    if (oldItItemOfTelecommunicationsCollectionNewTelecommunications != null && !oldItItemOfTelecommunicationsCollectionNewTelecommunications.equals(itItem)) {
-                        oldItItemOfTelecommunicationsCollectionNewTelecommunications.getTelecommunicationsCollection().remove(telecommunicationsCollectionNewTelecommunications);
-                        oldItItemOfTelecommunicationsCollectionNewTelecommunications = em.merge(oldItItemOfTelecommunicationsCollectionNewTelecommunications);
-                    }
-                }
+            if (perifericosidPerifericoOld != null && !perifericosidPerifericoOld.equals(perifericosidPerifericoNew)) {
+                perifericosidPerifericoOld.getItItemCollection().remove(itItem);
+                perifericosidPerifericoOld = em.merge(perifericosidPerifericoOld);
             }
-            for (Perifericos perifericosCollectionNewPerifericos : perifericosCollectionNew) {
-                if (!perifericosCollectionOld.contains(perifericosCollectionNewPerifericos)) {
-                    ItItem oldItItemOfPerifericosCollectionNewPerifericos = perifericosCollectionNewPerifericos.getItItem();
-                    perifericosCollectionNewPerifericos.setItItem(itItem);
-                    perifericosCollectionNewPerifericos = em.merge(perifericosCollectionNewPerifericos);
-                    if (oldItItemOfPerifericosCollectionNewPerifericos != null && !oldItItemOfPerifericosCollectionNewPerifericos.equals(itItem)) {
-                        oldItItemOfPerifericosCollectionNewPerifericos.getPerifericosCollection().remove(perifericosCollectionNewPerifericos);
-                        oldItItemOfPerifericosCollectionNewPerifericos = em.merge(oldItItemOfPerifericosCollectionNewPerifericos);
-                    }
-                }
+            if (perifericosidPerifericoNew != null && !perifericosidPerifericoNew.equals(perifericosidPerifericoOld)) {
+                perifericosidPerifericoNew.getItItemCollection().add(itItem);
+                perifericosidPerifericoNew = em.merge(perifericosidPerifericoNew);
             }
-            for (Laptops laptopsCollectionNewLaptops : laptopsCollectionNew) {
-                if (!laptopsCollectionOld.contains(laptopsCollectionNewLaptops)) {
-                    ItItem oldItItemOfLaptopsCollectionNewLaptops = laptopsCollectionNewLaptops.getItItem();
-                    laptopsCollectionNewLaptops.setItItem(itItem);
-                    laptopsCollectionNewLaptops = em.merge(laptopsCollectionNewLaptops);
-                    if (oldItItemOfLaptopsCollectionNewLaptops != null && !oldItItemOfLaptopsCollectionNewLaptops.equals(itItem)) {
-                        oldItItemOfLaptopsCollectionNewLaptops.getLaptopsCollection().remove(laptopsCollectionNewLaptops);
-                        oldItItemOfLaptopsCollectionNewLaptops = em.merge(oldItItemOfLaptopsCollectionNewLaptops);
-                    }
-                }
-            }
-            for (Workstation workstationCollectionNewWorkstation : workstationCollectionNew) {
-                if (!workstationCollectionOld.contains(workstationCollectionNewWorkstation)) {
-                    ItItem oldItItemOfWorkstationCollectionNewWorkstation = workstationCollectionNewWorkstation.getItItem();
-                    workstationCollectionNewWorkstation.setItItem(itItem);
-                    workstationCollectionNewWorkstation = em.merge(workstationCollectionNewWorkstation);
-                    if (oldItItemOfWorkstationCollectionNewWorkstation != null && !oldItItemOfWorkstationCollectionNewWorkstation.equals(itItem)) {
-                        oldItItemOfWorkstationCollectionNewWorkstation.getWorkstationCollection().remove(workstationCollectionNewWorkstation);
-                        oldItItemOfWorkstationCollectionNewWorkstation = em.merge(oldItItemOfWorkstationCollectionNewWorkstation);
+            for (ItItemHasEmpleado itItemHasEmpleadoCollectionNewItItemHasEmpleado : itItemHasEmpleadoCollectionNew) {
+                if (!itItemHasEmpleadoCollectionOld.contains(itItemHasEmpleadoCollectionNewItItemHasEmpleado)) {
+                    ItItem oldItItemOfItItemHasEmpleadoCollectionNewItItemHasEmpleado = itItemHasEmpleadoCollectionNewItItemHasEmpleado.getItItem();
+                    itItemHasEmpleadoCollectionNewItItemHasEmpleado.setItItem(itItem);
+                    itItemHasEmpleadoCollectionNewItItemHasEmpleado = em.merge(itItemHasEmpleadoCollectionNewItItemHasEmpleado);
+                    if (oldItItemOfItItemHasEmpleadoCollectionNewItItemHasEmpleado != null && !oldItItemOfItItemHasEmpleadoCollectionNewItItemHasEmpleado.equals(itItem)) {
+                        oldItItemOfItItemHasEmpleadoCollectionNewItItemHasEmpleado.getItItemHasEmpleadoCollection().remove(itItemHasEmpleadoCollectionNewItItemHasEmpleado);
+                        oldItItemOfItItemHasEmpleadoCollectionNewItItemHasEmpleado = em.merge(oldItItemOfItItemHasEmpleadoCollectionNewItItemHasEmpleado);
                     }
                 }
             }
@@ -403,7 +202,7 @@ public class ItItemJpaController implements Serializable {
             }
             String msg = ex.getLocalizedMessage();
             if (msg == null || msg.length() == 0) {
-                ItItemPK id = itItem.getItItemPK();
+                String id = itItem.getItSerie();
                 if (findItItem(id) == null) {
                     throw new NonexistentEntityException("The itItem with id " + id + " no longer exists.");
                 }
@@ -416,7 +215,7 @@ public class ItItemJpaController implements Serializable {
         }
     }
 
-    public void destroy(ItItemPK id) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
+    public void destroy(String id) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -424,60 +223,35 @@ public class ItItemJpaController implements Serializable {
             ItItem itItem;
             try {
                 itItem = em.getReference(ItItem.class, id);
-                itItem.getItItemPK();
+                itItem.getItSerie();
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The itItem with id " + id + " no longer exists.", enfe);
             }
             List<String> illegalOrphanMessages = null;
-            Collection<Servidor> servidorCollectionOrphanCheck = itItem.getServidorCollection();
-            for (Servidor servidorCollectionOrphanCheckServidor : servidorCollectionOrphanCheck) {
+            Collection<ItItemHasEmpleado> itItemHasEmpleadoCollectionOrphanCheck = itItem.getItItemHasEmpleadoCollection();
+            for (ItItemHasEmpleado itItemHasEmpleadoCollectionOrphanCheckItItemHasEmpleado : itItemHasEmpleadoCollectionOrphanCheck) {
                 if (illegalOrphanMessages == null) {
                     illegalOrphanMessages = new ArrayList<String>();
                 }
-                illegalOrphanMessages.add("This ItItem (" + itItem + ") cannot be destroyed since the Servidor " + servidorCollectionOrphanCheckServidor + " in its servidorCollection field has a non-nullable itItem field.");
-            }
-            Collection<Software> softwareCollectionOrphanCheck = itItem.getSoftwareCollection();
-            for (Software softwareCollectionOrphanCheckSoftware : softwareCollectionOrphanCheck) {
-                if (illegalOrphanMessages == null) {
-                    illegalOrphanMessages = new ArrayList<String>();
-                }
-                illegalOrphanMessages.add("This ItItem (" + itItem + ") cannot be destroyed since the Software " + softwareCollectionOrphanCheckSoftware + " in its softwareCollection field has a non-nullable itItem field.");
-            }
-            Collection<Telecommunications> telecommunicationsCollectionOrphanCheck = itItem.getTelecommunicationsCollection();
-            for (Telecommunications telecommunicationsCollectionOrphanCheckTelecommunications : telecommunicationsCollectionOrphanCheck) {
-                if (illegalOrphanMessages == null) {
-                    illegalOrphanMessages = new ArrayList<String>();
-                }
-                illegalOrphanMessages.add("This ItItem (" + itItem + ") cannot be destroyed since the Telecommunications " + telecommunicationsCollectionOrphanCheckTelecommunications + " in its telecommunicationsCollection field has a non-nullable itItem field.");
-            }
-            Collection<Perifericos> perifericosCollectionOrphanCheck = itItem.getPerifericosCollection();
-            for (Perifericos perifericosCollectionOrphanCheckPerifericos : perifericosCollectionOrphanCheck) {
-                if (illegalOrphanMessages == null) {
-                    illegalOrphanMessages = new ArrayList<String>();
-                }
-                illegalOrphanMessages.add("This ItItem (" + itItem + ") cannot be destroyed since the Perifericos " + perifericosCollectionOrphanCheckPerifericos + " in its perifericosCollection field has a non-nullable itItem field.");
-            }
-            Collection<Laptops> laptopsCollectionOrphanCheck = itItem.getLaptopsCollection();
-            for (Laptops laptopsCollectionOrphanCheckLaptops : laptopsCollectionOrphanCheck) {
-                if (illegalOrphanMessages == null) {
-                    illegalOrphanMessages = new ArrayList<String>();
-                }
-                illegalOrphanMessages.add("This ItItem (" + itItem + ") cannot be destroyed since the Laptops " + laptopsCollectionOrphanCheckLaptops + " in its laptopsCollection field has a non-nullable itItem field.");
-            }
-            Collection<Workstation> workstationCollectionOrphanCheck = itItem.getWorkstationCollection();
-            for (Workstation workstationCollectionOrphanCheckWorkstation : workstationCollectionOrphanCheck) {
-                if (illegalOrphanMessages == null) {
-                    illegalOrphanMessages = new ArrayList<String>();
-                }
-                illegalOrphanMessages.add("This ItItem (" + itItem + ") cannot be destroyed since the Workstation " + workstationCollectionOrphanCheckWorkstation + " in its workstationCollection field has a non-nullable itItem field.");
+                illegalOrphanMessages.add("This ItItem (" + itItem + ") cannot be destroyed since the ItItemHasEmpleado " + itItemHasEmpleadoCollectionOrphanCheckItItemHasEmpleado + " in its itItemHasEmpleadoCollection field has a non-nullable itItem field.");
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
-            Collection<Empleado> empleadoCollection = itItem.getEmpleadoCollection();
-            for (Empleado empleadoCollectionEmpleado : empleadoCollection) {
-                empleadoCollectionEmpleado.getItItemCollection().remove(itItem);
-                empleadoCollectionEmpleado = em.merge(empleadoCollectionEmpleado);
+            Computadora computadoraidComputadora = itItem.getComputadoraidComputadora();
+            if (computadoraidComputadora != null) {
+                computadoraidComputadora.getItItemCollection().remove(itItem);
+                computadoraidComputadora = em.merge(computadoraidComputadora);
+            }
+            Telecommunications telecommunicationsidTelecom = itItem.getTelecommunicationsidTelecom();
+            if (telecommunicationsidTelecom != null) {
+                telecommunicationsidTelecom.getItItemCollection().remove(itItem);
+                telecommunicationsidTelecom = em.merge(telecommunicationsidTelecom);
+            }
+            Perifericos perifericosidPeriferico = itItem.getPerifericosidPeriferico();
+            if (perifericosidPeriferico != null) {
+                perifericosidPeriferico.getItItemCollection().remove(itItem);
+                perifericosidPeriferico = em.merge(perifericosidPeriferico);
             }
             em.remove(itItem);
             em.getTransaction().commit();
@@ -519,7 +293,7 @@ public class ItItemJpaController implements Serializable {
         }
     }
 
-    public ItItem findItItem(ItItemPK id) {
+    public ItItem findItItem(String id) {
         EntityManager em = getEntityManager();
         try {
             return em.find(ItItem.class, id);

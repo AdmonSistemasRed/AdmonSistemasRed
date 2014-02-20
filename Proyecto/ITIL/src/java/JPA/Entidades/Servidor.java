@@ -7,19 +7,20 @@
 package JPA.Entidades;
 
 import java.io.Serializable;
+import java.util.Collection;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinColumns;
-import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -29,7 +30,18 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Table(name = "servidor")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Servidor.findAll", query = "SELECT s FROM Servidor s")})
+    @NamedQuery(name = "Servidor.findAll", query = "SELECT s FROM Servidor s"),
+    @NamedQuery(name = "Servidor.findByIdServidor", query = "SELECT s FROM Servidor s WHERE s.idServidor = :idServidor"),
+    @NamedQuery(name = "Servidor.findByProcesardor", query = "SELECT s FROM Servidor s WHERE s.procesardor = :procesardor"),
+    @NamedQuery(name = "Servidor.findByMemoria", query = "SELECT s FROM Servidor s WHERE s.memoria = :memoria"),
+    @NamedQuery(name = "Servidor.findByDiscoDuro", query = "SELECT s FROM Servidor s WHERE s.discoDuro = :discoDuro"),
+    @NamedQuery(name = "Servidor.findByUnidadOptica", query = "SELECT s FROM Servidor s WHERE s.unidadOptica = :unidadOptica"),
+    @NamedQuery(name = "Servidor.findByBateriaReserva", query = "SELECT s FROM Servidor s WHERE s.bateriaReserva = :bateriaReserva"),
+    @NamedQuery(name = "Servidor.findByDescripcion", query = "SELECT s FROM Servidor s WHERE s.descripcion = :descripcion"),
+    @NamedQuery(name = "Servidor.findByDireccionIP", query = "SELECT s FROM Servidor s WHERE s.direccionIP = :direccionIP"),
+    @NamedQuery(name = "Servidor.findByArquitectura", query = "SELECT s FROM Servidor s WHERE s.arquitectura = :arquitectura"),
+    @NamedQuery(name = "Servidor.findByCostoTotal", query = "SELECT s FROM Servidor s WHERE s.costoTotal = :costoTotal"),
+    @NamedQuery(name = "Servidor.findByDepreciacion", query = "SELECT s FROM Servidor s WHERE s.depreciacion = :depreciacion")})
 public class Servidor implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -62,11 +74,14 @@ public class Servidor implements Serializable {
     @Size(max = 45)
     @Column(name = "arquitectura")
     private String arquitectura;
-    @JoinColumns({
-        @JoinColumn(name = "IT_item_it_serie", referencedColumnName = "it_serie"),
-        @JoinColumn(name = "IT_item_it_marca", referencedColumnName = "it_marca")})
-    @ManyToOne(optional = false)
-    private ItItem itItem;
+    @Size(max = 45)
+    @Column(name = "costoTotal")
+    private String costoTotal;
+    @Size(max = 45)
+    @Column(name = "depreciacion")
+    private String depreciacion;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "servidoridServidor")
+    private Collection<Computadora> computadoraCollection;
 
     public Servidor() {
     }
@@ -147,12 +162,29 @@ public class Servidor implements Serializable {
         this.arquitectura = arquitectura;
     }
 
-    public ItItem getItItem() {
-        return itItem;
+    public String getCostoTotal() {
+        return costoTotal;
     }
 
-    public void setItItem(ItItem itItem) {
-        this.itItem = itItem;
+    public void setCostoTotal(String costoTotal) {
+        this.costoTotal = costoTotal;
+    }
+
+    public String getDepreciacion() {
+        return depreciacion;
+    }
+
+    public void setDepreciacion(String depreciacion) {
+        this.depreciacion = depreciacion;
+    }
+
+    @XmlTransient
+    public Collection<Computadora> getComputadoraCollection() {
+        return computadoraCollection;
+    }
+
+    public void setComputadoraCollection(Collection<Computadora> computadoraCollection) {
+        this.computadoraCollection = computadoraCollection;
     }
 
     @Override
@@ -177,7 +209,7 @@ public class Servidor implements Serializable {
 
     @Override
     public String toString() {
-        return "JPA.Entidades.Servidor[ idServidor=" + idServidor + " ]";
+        return "Entidades.Servidor[ idServidor=" + idServidor + " ]";
     }
     
 }

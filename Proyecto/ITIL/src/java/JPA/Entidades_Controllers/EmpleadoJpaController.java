@@ -6,18 +6,19 @@
 
 package JPA.Entidades_Controllers;
 
+import JPA.Entidades.Empleado;
 import java.io.Serializable;
 import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import JPA.Entidades.Area;
-import JPA.Entidades.Empleado;
+import JPA.Entidades.Sucursal;
 import JPA.Entidades.Lenguaje;
 import java.util.ArrayList;
 import java.util.Collection;
 import JPA.Entidades.Roles;
-import JPA.Entidades.ItItem;
+import JPA.Entidades.ItItemHasEmpleado;
+import JPA.Entidades_Controllers.exceptions.IllegalOrphanException;
 import JPA.Entidades_Controllers.exceptions.NonexistentEntityException;
 import JPA.Entidades_Controllers.exceptions.PreexistingEntityException;
 import JPA.Entidades_Controllers.exceptions.RollbackFailureException;
@@ -25,6 +26,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.transaction.UserTransaction;
 
 /**
  *
@@ -37,7 +39,7 @@ public class EmpleadoJpaController implements Serializable {
     private EntityManagerFactory emf = null;
 
     public EntityManager getEntityManager() {
-        emf = Persistence.createEntityManagerFactory("It_ITILPU");
+        emf = Persistence.createEntityManagerFactory("ITILPU");
         return emf.createEntityManager();
     }
 
@@ -48,17 +50,17 @@ public class EmpleadoJpaController implements Serializable {
         if (empleado.getRolesCollection() == null) {
             empleado.setRolesCollection(new ArrayList<Roles>());
         }
-        if (empleado.getItItemCollection() == null) {
-            empleado.setItItemCollection(new ArrayList<ItItem>());
+        if (empleado.getItItemHasEmpleadoCollection() == null) {
+            empleado.setItItemHasEmpleadoCollection(new ArrayList<ItItemHasEmpleado>());
         }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            Area areaareidArea = empleado.getAreaareidArea();
-            if (areaareidArea != null) {
-                areaareidArea = em.getReference(areaareidArea.getClass(), areaareidArea.getAreidArea());
-                empleado.setAreaareidArea(areaareidArea);
+            Sucursal sucursalSucursalidSucursal = empleado.getSucursalSucursalidSucursal();
+            if (sucursalSucursalidSucursal != null) {
+                sucursalSucursalidSucursal = em.getReference(sucursalSucursalidSucursal.getClass(), sucursalSucursalidSucursal.getSucursalidSucursal());
+                empleado.setSucursalSucursalidSucursal(sucursalSucursalidSucursal);
             }
             Collection<Lenguaje> attachedLenguajeCollection = new ArrayList<Lenguaje>();
             for (Lenguaje lenguajeCollectionLenguajeToAttach : empleado.getLenguajeCollection()) {
@@ -72,16 +74,16 @@ public class EmpleadoJpaController implements Serializable {
                 attachedRolesCollection.add(rolesCollectionRolesToAttach);
             }
             empleado.setRolesCollection(attachedRolesCollection);
-            Collection<ItItem> attachedItItemCollection = new ArrayList<ItItem>();
-            for (ItItem itItemCollectionItItemToAttach : empleado.getItItemCollection()) {
-                itItemCollectionItItemToAttach = em.getReference(itItemCollectionItItemToAttach.getClass(), itItemCollectionItItemToAttach.getItItemPK());
-                attachedItItemCollection.add(itItemCollectionItItemToAttach);
+            Collection<ItItemHasEmpleado> attachedItItemHasEmpleadoCollection = new ArrayList<ItItemHasEmpleado>();
+            for (ItItemHasEmpleado itItemHasEmpleadoCollectionItItemHasEmpleadoToAttach : empleado.getItItemHasEmpleadoCollection()) {
+                itItemHasEmpleadoCollectionItItemHasEmpleadoToAttach = em.getReference(itItemHasEmpleadoCollectionItItemHasEmpleadoToAttach.getClass(), itItemHasEmpleadoCollectionItItemHasEmpleadoToAttach.getItItemHasEmpleadoPK());
+                attachedItItemHasEmpleadoCollection.add(itItemHasEmpleadoCollectionItItemHasEmpleadoToAttach);
             }
-            empleado.setItItemCollection(attachedItItemCollection);
+            empleado.setItItemHasEmpleadoCollection(attachedItItemHasEmpleadoCollection);
             em.persist(empleado);
-            if (areaareidArea != null) {
-                areaareidArea.getEmpleadoCollection().add(empleado);
-                areaareidArea = em.merge(areaareidArea);
+            if (sucursalSucursalidSucursal != null) {
+                sucursalSucursalidSucursal.getEmpleadoCollection().add(empleado);
+                sucursalSucursalidSucursal = em.merge(sucursalSucursalidSucursal);
             }
             for (Lenguaje lenguajeCollectionLenguaje : empleado.getLenguajeCollection()) {
                 lenguajeCollectionLenguaje.getEmpleadoCollection().add(empleado);
@@ -91,9 +93,14 @@ public class EmpleadoJpaController implements Serializable {
                 rolesCollectionRoles.getEmpleadoCollection().add(empleado);
                 rolesCollectionRoles = em.merge(rolesCollectionRoles);
             }
-            for (ItItem itItemCollectionItItem : empleado.getItItemCollection()) {
-                itItemCollectionItItem.getEmpleadoCollection().add(empleado);
-                itItemCollectionItItem = em.merge(itItemCollectionItItem);
+            for (ItItemHasEmpleado itItemHasEmpleadoCollectionItItemHasEmpleado : empleado.getItItemHasEmpleadoCollection()) {
+                Empleado oldEmpleadoOfItItemHasEmpleadoCollectionItItemHasEmpleado = itItemHasEmpleadoCollectionItItemHasEmpleado.getEmpleado();
+                itItemHasEmpleadoCollectionItItemHasEmpleado.setEmpleado(empleado);
+                itItemHasEmpleadoCollectionItItemHasEmpleado = em.merge(itItemHasEmpleadoCollectionItItemHasEmpleado);
+                if (oldEmpleadoOfItItemHasEmpleadoCollectionItItemHasEmpleado != null) {
+                    oldEmpleadoOfItItemHasEmpleadoCollectionItItemHasEmpleado.getItItemHasEmpleadoCollection().remove(itItemHasEmpleadoCollectionItItemHasEmpleado);
+                    oldEmpleadoOfItItemHasEmpleadoCollectionItItemHasEmpleado = em.merge(oldEmpleadoOfItItemHasEmpleadoCollectionItItemHasEmpleado);
+                }
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -113,23 +120,35 @@ public class EmpleadoJpaController implements Serializable {
         }
     }
 
-    public void edit(Empleado empleado) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void edit(Empleado empleado) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
             Empleado persistentEmpleado = em.find(Empleado.class, empleado.getEmpNoEmpleado());
-            Area areaareidAreaOld = persistentEmpleado.getAreaareidArea();
-            Area areaareidAreaNew = empleado.getAreaareidArea();
+            Sucursal sucursalSucursalidSucursalOld = persistentEmpleado.getSucursalSucursalidSucursal();
+            Sucursal sucursalSucursalidSucursalNew = empleado.getSucursalSucursalidSucursal();
             Collection<Lenguaje> lenguajeCollectionOld = persistentEmpleado.getLenguajeCollection();
             Collection<Lenguaje> lenguajeCollectionNew = empleado.getLenguajeCollection();
             Collection<Roles> rolesCollectionOld = persistentEmpleado.getRolesCollection();
             Collection<Roles> rolesCollectionNew = empleado.getRolesCollection();
-            Collection<ItItem> itItemCollectionOld = persistentEmpleado.getItItemCollection();
-            Collection<ItItem> itItemCollectionNew = empleado.getItItemCollection();
-            if (areaareidAreaNew != null) {
-                areaareidAreaNew = em.getReference(areaareidAreaNew.getClass(), areaareidAreaNew.getAreidArea());
-                empleado.setAreaareidArea(areaareidAreaNew);
+            Collection<ItItemHasEmpleado> itItemHasEmpleadoCollectionOld = persistentEmpleado.getItItemHasEmpleadoCollection();
+            Collection<ItItemHasEmpleado> itItemHasEmpleadoCollectionNew = empleado.getItItemHasEmpleadoCollection();
+            List<String> illegalOrphanMessages = null;
+            for (ItItemHasEmpleado itItemHasEmpleadoCollectionOldItItemHasEmpleado : itItemHasEmpleadoCollectionOld) {
+                if (!itItemHasEmpleadoCollectionNew.contains(itItemHasEmpleadoCollectionOldItItemHasEmpleado)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain ItItemHasEmpleado " + itItemHasEmpleadoCollectionOldItItemHasEmpleado + " since its empleado field is not nullable.");
+                }
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
+            }
+            if (sucursalSucursalidSucursalNew != null) {
+                sucursalSucursalidSucursalNew = em.getReference(sucursalSucursalidSucursalNew.getClass(), sucursalSucursalidSucursalNew.getSucursalidSucursal());
+                empleado.setSucursalSucursalidSucursal(sucursalSucursalidSucursalNew);
             }
             Collection<Lenguaje> attachedLenguajeCollectionNew = new ArrayList<Lenguaje>();
             for (Lenguaje lenguajeCollectionNewLenguajeToAttach : lenguajeCollectionNew) {
@@ -145,21 +164,21 @@ public class EmpleadoJpaController implements Serializable {
             }
             rolesCollectionNew = attachedRolesCollectionNew;
             empleado.setRolesCollection(rolesCollectionNew);
-            Collection<ItItem> attachedItItemCollectionNew = new ArrayList<ItItem>();
-            for (ItItem itItemCollectionNewItItemToAttach : itItemCollectionNew) {
-                itItemCollectionNewItItemToAttach = em.getReference(itItemCollectionNewItItemToAttach.getClass(), itItemCollectionNewItItemToAttach.getItItemPK());
-                attachedItItemCollectionNew.add(itItemCollectionNewItItemToAttach);
+            Collection<ItItemHasEmpleado> attachedItItemHasEmpleadoCollectionNew = new ArrayList<ItItemHasEmpleado>();
+            for (ItItemHasEmpleado itItemHasEmpleadoCollectionNewItItemHasEmpleadoToAttach : itItemHasEmpleadoCollectionNew) {
+                itItemHasEmpleadoCollectionNewItItemHasEmpleadoToAttach = em.getReference(itItemHasEmpleadoCollectionNewItItemHasEmpleadoToAttach.getClass(), itItemHasEmpleadoCollectionNewItItemHasEmpleadoToAttach.getItItemHasEmpleadoPK());
+                attachedItItemHasEmpleadoCollectionNew.add(itItemHasEmpleadoCollectionNewItItemHasEmpleadoToAttach);
             }
-            itItemCollectionNew = attachedItItemCollectionNew;
-            empleado.setItItemCollection(itItemCollectionNew);
+            itItemHasEmpleadoCollectionNew = attachedItItemHasEmpleadoCollectionNew;
+            empleado.setItItemHasEmpleadoCollection(itItemHasEmpleadoCollectionNew);
             empleado = em.merge(empleado);
-            if (areaareidAreaOld != null && !areaareidAreaOld.equals(areaareidAreaNew)) {
-                areaareidAreaOld.getEmpleadoCollection().remove(empleado);
-                areaareidAreaOld = em.merge(areaareidAreaOld);
+            if (sucursalSucursalidSucursalOld != null && !sucursalSucursalidSucursalOld.equals(sucursalSucursalidSucursalNew)) {
+                sucursalSucursalidSucursalOld.getEmpleadoCollection().remove(empleado);
+                sucursalSucursalidSucursalOld = em.merge(sucursalSucursalidSucursalOld);
             }
-            if (areaareidAreaNew != null && !areaareidAreaNew.equals(areaareidAreaOld)) {
-                areaareidAreaNew.getEmpleadoCollection().add(empleado);
-                areaareidAreaNew = em.merge(areaareidAreaNew);
+            if (sucursalSucursalidSucursalNew != null && !sucursalSucursalidSucursalNew.equals(sucursalSucursalidSucursalOld)) {
+                sucursalSucursalidSucursalNew.getEmpleadoCollection().add(empleado);
+                sucursalSucursalidSucursalNew = em.merge(sucursalSucursalidSucursalNew);
             }
             for (Lenguaje lenguajeCollectionOldLenguaje : lenguajeCollectionOld) {
                 if (!lenguajeCollectionNew.contains(lenguajeCollectionOldLenguaje)) {
@@ -185,16 +204,15 @@ public class EmpleadoJpaController implements Serializable {
                     rolesCollectionNewRoles = em.merge(rolesCollectionNewRoles);
                 }
             }
-            for (ItItem itItemCollectionOldItItem : itItemCollectionOld) {
-                if (!itItemCollectionNew.contains(itItemCollectionOldItItem)) {
-                    itItemCollectionOldItItem.getEmpleadoCollection().remove(empleado);
-                    itItemCollectionOldItItem = em.merge(itItemCollectionOldItItem);
-                }
-            }
-            for (ItItem itItemCollectionNewItItem : itItemCollectionNew) {
-                if (!itItemCollectionOld.contains(itItemCollectionNewItItem)) {
-                    itItemCollectionNewItItem.getEmpleadoCollection().add(empleado);
-                    itItemCollectionNewItItem = em.merge(itItemCollectionNewItItem);
+            for (ItItemHasEmpleado itItemHasEmpleadoCollectionNewItItemHasEmpleado : itItemHasEmpleadoCollectionNew) {
+                if (!itItemHasEmpleadoCollectionOld.contains(itItemHasEmpleadoCollectionNewItItemHasEmpleado)) {
+                    Empleado oldEmpleadoOfItItemHasEmpleadoCollectionNewItItemHasEmpleado = itItemHasEmpleadoCollectionNewItItemHasEmpleado.getEmpleado();
+                    itItemHasEmpleadoCollectionNewItItemHasEmpleado.setEmpleado(empleado);
+                    itItemHasEmpleadoCollectionNewItItemHasEmpleado = em.merge(itItemHasEmpleadoCollectionNewItItemHasEmpleado);
+                    if (oldEmpleadoOfItItemHasEmpleadoCollectionNewItItemHasEmpleado != null && !oldEmpleadoOfItItemHasEmpleadoCollectionNewItItemHasEmpleado.equals(empleado)) {
+                        oldEmpleadoOfItItemHasEmpleadoCollectionNewItItemHasEmpleado.getItItemHasEmpleadoCollection().remove(itItemHasEmpleadoCollectionNewItItemHasEmpleado);
+                        oldEmpleadoOfItItemHasEmpleadoCollectionNewItItemHasEmpleado = em.merge(oldEmpleadoOfItItemHasEmpleadoCollectionNewItItemHasEmpleado);
+                    }
                 }
             }
             em.getTransaction().commit();
@@ -219,7 +237,7 @@ public class EmpleadoJpaController implements Serializable {
         }
     }
 
-    public void destroy(String id) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void destroy(String id) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -231,10 +249,21 @@ public class EmpleadoJpaController implements Serializable {
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The empleado with id " + id + " no longer exists.", enfe);
             }
-            Area areaareidArea = empleado.getAreaareidArea();
-            if (areaareidArea != null) {
-                areaareidArea.getEmpleadoCollection().remove(empleado);
-                areaareidArea = em.merge(areaareidArea);
+            List<String> illegalOrphanMessages = null;
+            Collection<ItItemHasEmpleado> itItemHasEmpleadoCollectionOrphanCheck = empleado.getItItemHasEmpleadoCollection();
+            for (ItItemHasEmpleado itItemHasEmpleadoCollectionOrphanCheckItItemHasEmpleado : itItemHasEmpleadoCollectionOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This Empleado (" + empleado + ") cannot be destroyed since the ItItemHasEmpleado " + itItemHasEmpleadoCollectionOrphanCheckItItemHasEmpleado + " in its itItemHasEmpleadoCollection field has a non-nullable empleado field.");
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
+            }
+            Sucursal sucursalSucursalidSucursal = empleado.getSucursalSucursalidSucursal();
+            if (sucursalSucursalidSucursal != null) {
+                sucursalSucursalidSucursal.getEmpleadoCollection().remove(empleado);
+                sucursalSucursalidSucursal = em.merge(sucursalSucursalidSucursal);
             }
             Collection<Lenguaje> lenguajeCollection = empleado.getLenguajeCollection();
             for (Lenguaje lenguajeCollectionLenguaje : lenguajeCollection) {
@@ -245,11 +274,6 @@ public class EmpleadoJpaController implements Serializable {
             for (Roles rolesCollectionRoles : rolesCollection) {
                 rolesCollectionRoles.getEmpleadoCollection().remove(empleado);
                 rolesCollectionRoles = em.merge(rolesCollectionRoles);
-            }
-            Collection<ItItem> itItemCollection = empleado.getItItemCollection();
-            for (ItItem itItemCollectionItItem : itItemCollection) {
-                itItemCollectionItItem.getEmpleadoCollection().remove(empleado);
-                itItemCollectionItItem = em.merge(itItemCollectionItItem);
             }
             em.remove(empleado);
             em.getTransaction().commit();

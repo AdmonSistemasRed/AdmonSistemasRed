@@ -7,19 +7,20 @@
 package JPA.Entidades;
 
 import java.io.Serializable;
+import java.util.Collection;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinColumns;
-import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -29,7 +30,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Table(name = "perifericos")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Perifericos.findAll", query = "SELECT p FROM Perifericos p")})
+    @NamedQuery(name = "Perifericos.findAll", query = "SELECT p FROM Perifericos p"),
+    @NamedQuery(name = "Perifericos.findByIdPeriferico", query = "SELECT p FROM Perifericos p WHERE p.idPeriferico = :idPeriferico"),
+    @NamedQuery(name = "Perifericos.findByCategoria", query = "SELECT p FROM Perifericos p WHERE p.categoria = :categoria"),
+    @NamedQuery(name = "Perifericos.findByMarca", query = "SELECT p FROM Perifericos p WHERE p.marca = :marca"),
+    @NamedQuery(name = "Perifericos.findByModelo", query = "SELECT p FROM Perifericos p WHERE p.modelo = :modelo"),
+    @NamedQuery(name = "Perifericos.findByDescripcion", query = "SELECT p FROM Perifericos p WHERE p.descripcion = :descripcion")})
 public class Perifericos implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -43,16 +49,19 @@ public class Perifericos implements Serializable {
     @Size(min = 1, max = 45)
     @Column(name = "categoria")
     private String categoria;
+    @Size(max = 45)
+    @Column(name = "marca")
+    private String marca;
+    @Size(max = 45)
+    @Column(name = "modelo")
+    private String modelo;
     @Basic(optional = false)
     @NotNull
     @Size(min = 1, max = 100)
     @Column(name = "descripcion")
     private String descripcion;
-    @JoinColumns({
-        @JoinColumn(name = "IT_item_it_serie", referencedColumnName = "it_serie"),
-        @JoinColumn(name = "IT_item_it_marca", referencedColumnName = "it_marca")})
-    @ManyToOne(optional = false)
-    private ItItem itItem;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "perifericosidPeriferico")
+    private Collection<ItItem> itItemCollection;
 
     public Perifericos() {
     }
@@ -83,6 +92,22 @@ public class Perifericos implements Serializable {
         this.categoria = categoria;
     }
 
+    public String getMarca() {
+        return marca;
+    }
+
+    public void setMarca(String marca) {
+        this.marca = marca;
+    }
+
+    public String getModelo() {
+        return modelo;
+    }
+
+    public void setModelo(String modelo) {
+        this.modelo = modelo;
+    }
+
     public String getDescripcion() {
         return descripcion;
     }
@@ -91,12 +116,13 @@ public class Perifericos implements Serializable {
         this.descripcion = descripcion;
     }
 
-    public ItItem getItItem() {
-        return itItem;
+    @XmlTransient
+    public Collection<ItItem> getItItemCollection() {
+        return itItemCollection;
     }
 
-    public void setItItem(ItItem itItem) {
-        this.itItem = itItem;
+    public void setItItemCollection(Collection<ItItem> itItemCollection) {
+        this.itItemCollection = itItemCollection;
     }
 
     @Override
@@ -121,7 +147,7 @@ public class Perifericos implements Serializable {
 
     @Override
     public String toString() {
-        return "JPA.Entidades.Perifericos[ idPeriferico=" + idPeriferico + " ]";
+        return "Entidades.Perifericos[ idPeriferico=" + idPeriferico + " ]";
     }
     
 }

@@ -9,6 +9,7 @@ package JPA.Entidades;
 import java.io.Serializable;
 import java.util.Collection;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -18,6 +19,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -32,7 +34,27 @@ import javax.xml.bind.annotation.XmlTransient;
 @Table(name = "empleado")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Empleado.findAll", query = "SELECT e FROM Empleado e")})
+    @NamedQuery(name = "Empleado.findAll", query = "SELECT e FROM Empleado e"),
+    @NamedQuery(name = "Empleado.findByEmpNoEmpleado", query = "SELECT e FROM Empleado e WHERE e.empNoEmpleado = :empNoEmpleado"),
+    @NamedQuery(name = "Empleado.findByEmpNombre", query = "SELECT e FROM Empleado e WHERE e.empNombre = :empNombre"),
+    @NamedQuery(name = "Empleado.findByEmpPaterno", query = "SELECT e FROM Empleado e WHERE e.empPaterno = :empPaterno"),
+    @NamedQuery(name = "Empleado.findByEmpMaterno", query = "SELECT e FROM Empleado e WHERE e.empMaterno = :empMaterno"),
+    @NamedQuery(name = "Empleado.findByEmpTelefono", query = "SELECT e FROM Empleado e WHERE e.empTelefono = :empTelefono"),
+    @NamedQuery(name = "Empleado.findByEmpCelular", query = "SELECT e FROM Empleado e WHERE e.empCelular = :empCelular"),
+    @NamedQuery(name = "Empleado.findByEmpEmail", query = "SELECT e FROM Empleado e WHERE e.empEmail = :empEmail"),
+    @NamedQuery(name = "Empleado.findByEmpusrMensajeria", query = "SELECT e FROM Empleado e WHERE e.empusrMensajeria = :empusrMensajeria"),
+    @NamedQuery(name = "Empleado.findByEmpUbicacion", query = "SELECT e FROM Empleado e WHERE e.empUbicacion = :empUbicacion"),
+    @NamedQuery(name = "Empleado.findByEmpLenguaje", query = "SELECT e FROM Empleado e WHERE e.empLenguaje = :empLenguaje"),
+    @NamedQuery(name = "Empleado.findByEmpUtc", query = "SELECT e FROM Empleado e WHERE e.empUtc = :empUtc"),
+    @NamedQuery(name = "Empleado.findByEmpDisponibilidad", query = "SELECT e FROM Empleado e WHERE e.empDisponibilidad = :empDisponibilidad"),
+    @NamedQuery(name = "Empleado.findByEmpServicios", query = "SELECT e FROM Empleado e WHERE e.empServicios = :empServicios"),
+    @NamedQuery(name = "Empleado.findByEmpIntereses", query = "SELECT e FROM Empleado e WHERE e.empIntereses = :empIntereses"),
+    @NamedQuery(name = "Empleado.findByEmpCertificaciones", query = "SELECT e FROM Empleado e WHERE e.empCertificaciones = :empCertificaciones"),
+    @NamedQuery(name = "Empleado.findByEmpHabilidades", query = "SELECT e FROM Empleado e WHERE e.empHabilidades = :empHabilidades"),
+    @NamedQuery(name = "Empleado.findByEmpResponsabilidades", query = "SELECT e FROM Empleado e WHERE e.empResponsabilidades = :empResponsabilidades"),
+    @NamedQuery(name = "Empleado.findByRolRolidRol", query = "SELECT e FROM Empleado e WHERE e.rolRolidRol = :rolRolidRol"),
+    @NamedQuery(name = "Empleado.findByEmpnombreUser", query = "SELECT e FROM Empleado e WHERE e.empnombreUser = :empnombreUser"),
+    @NamedQuery(name = "Empleado.findByEmpPassword", query = "SELECT e FROM Empleado e WHERE e.empPassword = :empPassword")})
 public class Empleado implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -95,6 +117,21 @@ public class Empleado implements Serializable {
     @Size(max = 45)
     @Column(name = "emp_responsabilidades")
     private String empResponsabilidades;
+    @Basic(optional = false)
+    @NotNull
+    @Size(min = 1, max = 20)
+    @Column(name = "Rol_Rol_idRol")
+    private String rolRolidRol;
+    @Basic(optional = false)
+    @NotNull
+    @Size(min = 1, max = 45)
+    @Column(name = "emp_nombreUser")
+    private String empnombreUser;
+    @Basic(optional = false)
+    @NotNull
+    @Size(min = 1, max = 45)
+    @Column(name = "emp_Password")
+    private String empPassword;
     @JoinTable(name = "empleado_has_lenguaje", joinColumns = {
         @JoinColumn(name = "empleado_emp_NoEmpleado", referencedColumnName = "emp_NoEmpleado")}, inverseJoinColumns = {
         @JoinColumn(name = "lenguaje_len_lenguaje", referencedColumnName = "len_lenguaje")})
@@ -105,11 +142,11 @@ public class Empleado implements Serializable {
         @JoinColumn(name = "roles_rol_idRol", referencedColumnName = "rol_idRol")})
     @ManyToMany
     private Collection<Roles> rolesCollection;
-    @ManyToMany(mappedBy = "empleadoCollection")
-    private Collection<ItItem> itItemCollection;
-    @JoinColumn(name = "area_are_idArea", referencedColumnName = "are_idArea")
+    @JoinColumn(name = "Sucursal_Sucursal_idSucursal", referencedColumnName = "Sucursal_idSucursal")
     @ManyToOne(optional = false)
-    private Area areaareidArea;
+    private Sucursal sucursalSucursalidSucursal;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "empleado")
+    private Collection<ItItemHasEmpleado> itItemHasEmpleadoCollection;
 
     public Empleado() {
     }
@@ -118,11 +155,14 @@ public class Empleado implements Serializable {
         this.empNoEmpleado = empNoEmpleado;
     }
 
-    public Empleado(String empNoEmpleado, String empNombre, String empPaterno, String empMaterno) {
+    public Empleado(String empNoEmpleado, String empNombre, String empPaterno, String empMaterno, String rolRolidRol, String empnombreUser, String empPassword) {
         this.empNoEmpleado = empNoEmpleado;
         this.empNombre = empNombre;
         this.empPaterno = empPaterno;
         this.empMaterno = empMaterno;
+        this.rolRolidRol = rolRolidRol;
+        this.empnombreUser = empnombreUser;
+        this.empPassword = empPassword;
     }
 
     public String getEmpNoEmpleado() {
@@ -261,6 +301,30 @@ public class Empleado implements Serializable {
         this.empResponsabilidades = empResponsabilidades;
     }
 
+    public String getRolRolidRol() {
+        return rolRolidRol;
+    }
+
+    public void setRolRolidRol(String rolRolidRol) {
+        this.rolRolidRol = rolRolidRol;
+    }
+
+    public String getEmpnombreUser() {
+        return empnombreUser;
+    }
+
+    public void setEmpnombreUser(String empnombreUser) {
+        this.empnombreUser = empnombreUser;
+    }
+
+    public String getEmpPassword() {
+        return empPassword;
+    }
+
+    public void setEmpPassword(String empPassword) {
+        this.empPassword = empPassword;
+    }
+
     @XmlTransient
     public Collection<Lenguaje> getLenguajeCollection() {
         return lenguajeCollection;
@@ -279,21 +343,21 @@ public class Empleado implements Serializable {
         this.rolesCollection = rolesCollection;
     }
 
+    public Sucursal getSucursalSucursalidSucursal() {
+        return sucursalSucursalidSucursal;
+    }
+
+    public void setSucursalSucursalidSucursal(Sucursal sucursalSucursalidSucursal) {
+        this.sucursalSucursalidSucursal = sucursalSucursalidSucursal;
+    }
+
     @XmlTransient
-    public Collection<ItItem> getItItemCollection() {
-        return itItemCollection;
+    public Collection<ItItemHasEmpleado> getItItemHasEmpleadoCollection() {
+        return itItemHasEmpleadoCollection;
     }
 
-    public void setItItemCollection(Collection<ItItem> itItemCollection) {
-        this.itItemCollection = itItemCollection;
-    }
-
-    public Area getAreaareidArea() {
-        return areaareidArea;
-    }
-
-    public void setAreaareidArea(Area areaareidArea) {
-        this.areaareidArea = areaareidArea;
+    public void setItItemHasEmpleadoCollection(Collection<ItItemHasEmpleado> itItemHasEmpleadoCollection) {
+        this.itItemHasEmpleadoCollection = itItemHasEmpleadoCollection;
     }
 
     @Override
@@ -318,7 +382,7 @@ public class Empleado implements Serializable {
 
     @Override
     public String toString() {
-        return "JPA.Entidades.Empleado[ empNoEmpleado=" + empNoEmpleado + " ]";
+        return "Entidades.Empleado[ empNoEmpleado=" + empNoEmpleado + " ]";
     }
     
 }

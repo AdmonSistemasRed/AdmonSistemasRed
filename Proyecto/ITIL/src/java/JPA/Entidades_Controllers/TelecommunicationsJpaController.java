@@ -13,13 +13,17 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import JPA.Entidades.ItItem;
 import JPA.Entidades.Telecommunications;
+import JPA.Entidades_Controllers.exceptions.IllegalOrphanException;
 import JPA.Entidades_Controllers.exceptions.NonexistentEntityException;
 import JPA.Entidades_Controllers.exceptions.PreexistingEntityException;
 import JPA.Entidades_Controllers.exceptions.RollbackFailureException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.transaction.UserTransaction;
 
 /**
  *
@@ -28,28 +32,36 @@ import javax.persistence.Persistence;
 public class TelecommunicationsJpaController implements Serializable {
 
     public TelecommunicationsJpaController() {
-   }
+    }
     private EntityManagerFactory emf = null;
 
     public EntityManager getEntityManager() {
-        emf = Persistence.createEntityManagerFactory("It_ITILPU");
+        emf = Persistence.createEntityManagerFactory("ITILPU");
         return emf.createEntityManager();
     }
-
     public void create(Telecommunications telecommunications) throws PreexistingEntityException, RollbackFailureException, Exception {
+        if (telecommunications.getItItemCollection() == null) {
+            telecommunications.setItItemCollection(new ArrayList<ItItem>());
+        }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            ItItem itItem = telecommunications.getItItem();
-            if (itItem != null) {
-                itItem = em.getReference(itItem.getClass(), itItem.getItItemPK());
-                telecommunications.setItItem(itItem);
+            Collection<ItItem> attachedItItemCollection = new ArrayList<ItItem>();
+            for (ItItem itItemCollectionItItemToAttach : telecommunications.getItItemCollection()) {
+                itItemCollectionItItemToAttach = em.getReference(itItemCollectionItItemToAttach.getClass(), itItemCollectionItItemToAttach.getItSerie());
+                attachedItItemCollection.add(itItemCollectionItItemToAttach);
             }
+            telecommunications.setItItemCollection(attachedItItemCollection);
             em.persist(telecommunications);
-            if (itItem != null) {
-                itItem.getTelecommunicationsCollection().add(telecommunications);
-                itItem = em.merge(itItem);
+            for (ItItem itItemCollectionItItem : telecommunications.getItItemCollection()) {
+                Telecommunications oldTelecommunicationsidTelecomOfItItemCollectionItItem = itItemCollectionItItem.getTelecommunicationsidTelecom();
+                itItemCollectionItItem.setTelecommunicationsidTelecom(telecommunications);
+                itItemCollectionItItem = em.merge(itItemCollectionItItem);
+                if (oldTelecommunicationsidTelecomOfItItemCollectionItItem != null) {
+                    oldTelecommunicationsidTelecomOfItItemCollectionItItem.getItItemCollection().remove(itItemCollectionItItem);
+                    oldTelecommunicationsidTelecomOfItItemCollectionItItem = em.merge(oldTelecommunicationsidTelecomOfItItemCollectionItItem);
+                }
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -69,26 +81,44 @@ public class TelecommunicationsJpaController implements Serializable {
         }
     }
 
-    public void edit(Telecommunications telecommunications) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void edit(Telecommunications telecommunications) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
             Telecommunications persistentTelecommunications = em.find(Telecommunications.class, telecommunications.getIdTelecom());
-            ItItem itItemOld = persistentTelecommunications.getItItem();
-            ItItem itItemNew = telecommunications.getItItem();
-            if (itItemNew != null) {
-                itItemNew = em.getReference(itItemNew.getClass(), itItemNew.getItItemPK());
-                telecommunications.setItItem(itItemNew);
+            Collection<ItItem> itItemCollectionOld = persistentTelecommunications.getItItemCollection();
+            Collection<ItItem> itItemCollectionNew = telecommunications.getItItemCollection();
+            List<String> illegalOrphanMessages = null;
+            for (ItItem itItemCollectionOldItItem : itItemCollectionOld) {
+                if (!itItemCollectionNew.contains(itItemCollectionOldItItem)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain ItItem " + itItemCollectionOldItItem + " since its telecommunicationsidTelecom field is not nullable.");
+                }
             }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
+            }
+            Collection<ItItem> attachedItItemCollectionNew = new ArrayList<ItItem>();
+            for (ItItem itItemCollectionNewItItemToAttach : itItemCollectionNew) {
+                itItemCollectionNewItItemToAttach = em.getReference(itItemCollectionNewItItemToAttach.getClass(), itItemCollectionNewItItemToAttach.getItSerie());
+                attachedItItemCollectionNew.add(itItemCollectionNewItItemToAttach);
+            }
+            itItemCollectionNew = attachedItItemCollectionNew;
+            telecommunications.setItItemCollection(itItemCollectionNew);
             telecommunications = em.merge(telecommunications);
-            if (itItemOld != null && !itItemOld.equals(itItemNew)) {
-                itItemOld.getTelecommunicationsCollection().remove(telecommunications);
-                itItemOld = em.merge(itItemOld);
-            }
-            if (itItemNew != null && !itItemNew.equals(itItemOld)) {
-                itItemNew.getTelecommunicationsCollection().add(telecommunications);
-                itItemNew = em.merge(itItemNew);
+            for (ItItem itItemCollectionNewItItem : itItemCollectionNew) {
+                if (!itItemCollectionOld.contains(itItemCollectionNewItItem)) {
+                    Telecommunications oldTelecommunicationsidTelecomOfItItemCollectionNewItItem = itItemCollectionNewItItem.getTelecommunicationsidTelecom();
+                    itItemCollectionNewItItem.setTelecommunicationsidTelecom(telecommunications);
+                    itItemCollectionNewItItem = em.merge(itItemCollectionNewItItem);
+                    if (oldTelecommunicationsidTelecomOfItItemCollectionNewItItem != null && !oldTelecommunicationsidTelecomOfItItemCollectionNewItItem.equals(telecommunications)) {
+                        oldTelecommunicationsidTelecomOfItItemCollectionNewItItem.getItItemCollection().remove(itItemCollectionNewItItem);
+                        oldTelecommunicationsidTelecomOfItItemCollectionNewItItem = em.merge(oldTelecommunicationsidTelecomOfItItemCollectionNewItItem);
+                    }
+                }
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -112,7 +142,7 @@ public class TelecommunicationsJpaController implements Serializable {
         }
     }
 
-    public void destroy(String id) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void destroy(String id) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -124,10 +154,16 @@ public class TelecommunicationsJpaController implements Serializable {
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The telecommunications with id " + id + " no longer exists.", enfe);
             }
-            ItItem itItem = telecommunications.getItItem();
-            if (itItem != null) {
-                itItem.getTelecommunicationsCollection().remove(telecommunications);
-                itItem = em.merge(itItem);
+            List<String> illegalOrphanMessages = null;
+            Collection<ItItem> itItemCollectionOrphanCheck = telecommunications.getItItemCollection();
+            for (ItItem itItemCollectionOrphanCheckItItem : itItemCollectionOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This Telecommunications (" + telecommunications + ") cannot be destroyed since the ItItem " + itItemCollectionOrphanCheckItItem + " in its itItemCollection field has a non-nullable telecommunicationsidTelecom field.");
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
             }
             em.remove(telecommunications);
             em.getTransaction().commit();

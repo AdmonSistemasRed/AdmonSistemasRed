@@ -7,19 +7,21 @@
 package JPA.Entidades;
 
 import java.io.Serializable;
+import java.util.Collection;
 import javax.persistence.Basic;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinColumns;
-import javax.persistence.ManyToOne;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -29,7 +31,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Table(name = "software")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Software.findAll", query = "SELECT s FROM Software s")})
+    @NamedQuery(name = "Software.findAll", query = "SELECT s FROM Software s"),
+    @NamedQuery(name = "Software.findByIdSoftware", query = "SELECT s FROM Software s WHERE s.idSoftware = :idSoftware"),
+    @NamedQuery(name = "Software.findByNombreSoftware", query = "SELECT s FROM Software s WHERE s.nombreSoftware = :nombreSoftware"),
+    @NamedQuery(name = "Software.findByLicencia", query = "SELECT s FROM Software s WHERE s.licencia = :licencia"),
+    @NamedQuery(name = "Software.findByCantidadUsuarios", query = "SELECT s FROM Software s WHERE s.cantidadUsuarios = :cantidadUsuarios"),
+    @NamedQuery(name = "Software.findByVersion", query = "SELECT s FROM Software s WHERE s.version = :version"),
+    @NamedQuery(name = "Software.findByArquitectura", query = "SELECT s FROM Software s WHERE s.arquitectura = :arquitectura"),
+    @NamedQuery(name = "Software.findByCostoUnitario", query = "SELECT s FROM Software s WHERE s.costoUnitario = :costoUnitario"),
+    @NamedQuery(name = "Software.findByCostoPorVolumen", query = "SELECT s FROM Software s WHERE s.costoPorVolumen = :costoPorVolumen"),
+    @NamedQuery(name = "Software.findByDescripcion", query = "SELECT s FROM Software s WHERE s.descripcion = :descripcion")})
 public class Software implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -50,17 +61,23 @@ public class Software implements Serializable {
     @Size(max = 45)
     @Column(name = "version")
     private String version;
-    @Size(max = 100)
-    @Column(name = "descripcion")
-    private String descripcion;
     @Size(max = 45)
     @Column(name = "arquitectura")
     private String arquitectura;
-    @JoinColumns({
-        @JoinColumn(name = "IT_item_it_serie", referencedColumnName = "it_serie"),
-        @JoinColumn(name = "IT_item_it_marca", referencedColumnName = "it_marca")})
-    @ManyToOne(optional = false)
-    private ItItem itItem;
+    @Size(max = 45)
+    @Column(name = "costoUnitario")
+    private String costoUnitario;
+    @Size(max = 45)
+    @Column(name = "costoPorVolumen")
+    private String costoPorVolumen;
+    @Size(max = 100)
+    @Column(name = "descripcion")
+    private String descripcion;
+    @JoinTable(name = "software_has_computadora", joinColumns = {
+        @JoinColumn(name = "Software_idSoftware", referencedColumnName = "idSoftware")}, inverseJoinColumns = {
+        @JoinColumn(name = "Computadora_idComputadora", referencedColumnName = "idComputadora")})
+    @ManyToMany
+    private Collection<Computadora> computadoraCollection;
 
     public Software() {
     }
@@ -109,14 +126,6 @@ public class Software implements Serializable {
         this.version = version;
     }
 
-    public String getDescripcion() {
-        return descripcion;
-    }
-
-    public void setDescripcion(String descripcion) {
-        this.descripcion = descripcion;
-    }
-
     public String getArquitectura() {
         return arquitectura;
     }
@@ -125,12 +134,37 @@ public class Software implements Serializable {
         this.arquitectura = arquitectura;
     }
 
-    public ItItem getItItem() {
-        return itItem;
+    public String getCostoUnitario() {
+        return costoUnitario;
     }
 
-    public void setItItem(ItItem itItem) {
-        this.itItem = itItem;
+    public void setCostoUnitario(String costoUnitario) {
+        this.costoUnitario = costoUnitario;
+    }
+
+    public String getCostoPorVolumen() {
+        return costoPorVolumen;
+    }
+
+    public void setCostoPorVolumen(String costoPorVolumen) {
+        this.costoPorVolumen = costoPorVolumen;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    @XmlTransient
+    public Collection<Computadora> getComputadoraCollection() {
+        return computadoraCollection;
+    }
+
+    public void setComputadoraCollection(Collection<Computadora> computadoraCollection) {
+        this.computadoraCollection = computadoraCollection;
     }
 
     @Override
@@ -155,7 +189,7 @@ public class Software implements Serializable {
 
     @Override
     public String toString() {
-        return "JPA.Entidades.Software[ idSoftware=" + idSoftware + " ]";
+        return "Entidades.Software[ idSoftware=" + idSoftware + " ]";
     }
     
 }

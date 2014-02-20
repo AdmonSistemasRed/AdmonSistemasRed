@@ -11,15 +11,18 @@ import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import JPA.Entidades.ItItem;
+import JPA.Entidades.Computadora;
 import JPA.Entidades.Software;
 import JPA.Entidades_Controllers.exceptions.NonexistentEntityException;
 import JPA.Entidades_Controllers.exceptions.PreexistingEntityException;
 import JPA.Entidades_Controllers.exceptions.RollbackFailureException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.transaction.UserTransaction;
 
 /**
  *
@@ -32,24 +35,27 @@ public class SoftwareJpaController implements Serializable {
     private EntityManagerFactory emf = null;
 
     public EntityManager getEntityManager() {
-        emf = Persistence.createEntityManagerFactory("It_ITILPU");
+        emf = Persistence.createEntityManagerFactory("ITILPU");
         return emf.createEntityManager();
     }
-
     public void create(Software software) throws PreexistingEntityException, RollbackFailureException, Exception {
+        if (software.getComputadoraCollection() == null) {
+            software.setComputadoraCollection(new ArrayList<Computadora>());
+        }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            ItItem itItem = software.getItItem();
-            if (itItem != null) {
-                itItem = em.getReference(itItem.getClass(), itItem.getItItemPK());
-                software.setItItem(itItem);
+            Collection<Computadora> attachedComputadoraCollection = new ArrayList<Computadora>();
+            for (Computadora computadoraCollectionComputadoraToAttach : software.getComputadoraCollection()) {
+                computadoraCollectionComputadoraToAttach = em.getReference(computadoraCollectionComputadoraToAttach.getClass(), computadoraCollectionComputadoraToAttach.getIdComputadora());
+                attachedComputadoraCollection.add(computadoraCollectionComputadoraToAttach);
             }
+            software.setComputadoraCollection(attachedComputadoraCollection);
             em.persist(software);
-            if (itItem != null) {
-                itItem.getSoftwareCollection().add(software);
-                itItem = em.merge(itItem);
+            for (Computadora computadoraCollectionComputadora : software.getComputadoraCollection()) {
+                computadoraCollectionComputadora.getSoftwareCollection().add(software);
+                computadoraCollectionComputadora = em.merge(computadoraCollectionComputadora);
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -75,20 +81,27 @@ public class SoftwareJpaController implements Serializable {
             em = getEntityManager();
             em.getTransaction().begin();
             Software persistentSoftware = em.find(Software.class, software.getIdSoftware());
-            ItItem itItemOld = persistentSoftware.getItItem();
-            ItItem itItemNew = software.getItItem();
-            if (itItemNew != null) {
-                itItemNew = em.getReference(itItemNew.getClass(), itItemNew.getItItemPK());
-                software.setItItem(itItemNew);
+            Collection<Computadora> computadoraCollectionOld = persistentSoftware.getComputadoraCollection();
+            Collection<Computadora> computadoraCollectionNew = software.getComputadoraCollection();
+            Collection<Computadora> attachedComputadoraCollectionNew = new ArrayList<Computadora>();
+            for (Computadora computadoraCollectionNewComputadoraToAttach : computadoraCollectionNew) {
+                computadoraCollectionNewComputadoraToAttach = em.getReference(computadoraCollectionNewComputadoraToAttach.getClass(), computadoraCollectionNewComputadoraToAttach.getIdComputadora());
+                attachedComputadoraCollectionNew.add(computadoraCollectionNewComputadoraToAttach);
             }
+            computadoraCollectionNew = attachedComputadoraCollectionNew;
+            software.setComputadoraCollection(computadoraCollectionNew);
             software = em.merge(software);
-            if (itItemOld != null && !itItemOld.equals(itItemNew)) {
-                itItemOld.getSoftwareCollection().remove(software);
-                itItemOld = em.merge(itItemOld);
+            for (Computadora computadoraCollectionOldComputadora : computadoraCollectionOld) {
+                if (!computadoraCollectionNew.contains(computadoraCollectionOldComputadora)) {
+                    computadoraCollectionOldComputadora.getSoftwareCollection().remove(software);
+                    computadoraCollectionOldComputadora = em.merge(computadoraCollectionOldComputadora);
+                }
             }
-            if (itItemNew != null && !itItemNew.equals(itItemOld)) {
-                itItemNew.getSoftwareCollection().add(software);
-                itItemNew = em.merge(itItemNew);
+            for (Computadora computadoraCollectionNewComputadora : computadoraCollectionNew) {
+                if (!computadoraCollectionOld.contains(computadoraCollectionNewComputadora)) {
+                    computadoraCollectionNewComputadora.getSoftwareCollection().add(software);
+                    computadoraCollectionNewComputadora = em.merge(computadoraCollectionNewComputadora);
+                }
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -124,10 +137,10 @@ public class SoftwareJpaController implements Serializable {
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The software with id " + id + " no longer exists.", enfe);
             }
-            ItItem itItem = software.getItItem();
-            if (itItem != null) {
-                itItem.getSoftwareCollection().remove(software);
-                itItem = em.merge(itItem);
+            Collection<Computadora> computadoraCollection = software.getComputadoraCollection();
+            for (Computadora computadoraCollectionComputadora : computadoraCollection) {
+                computadoraCollectionComputadora.getSoftwareCollection().remove(software);
+                computadoraCollectionComputadora = em.merge(computadoraCollectionComputadora);
             }
             em.remove(software);
             em.getTransaction().commit();

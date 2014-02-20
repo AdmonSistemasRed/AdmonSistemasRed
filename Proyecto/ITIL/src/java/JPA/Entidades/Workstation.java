@@ -7,19 +7,20 @@
 package JPA.Entidades;
 
 import java.io.Serializable;
+import java.util.Collection;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinColumns;
-import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -29,7 +30,20 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Table(name = "workstation")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Workstation.findAll", query = "SELECT w FROM Workstation w")})
+    @NamedQuery(name = "Workstation.findAll", query = "SELECT w FROM Workstation w"),
+    @NamedQuery(name = "Workstation.findByIdWorkstation", query = "SELECT w FROM Workstation w WHERE w.idWorkstation = :idWorkstation"),
+    @NamedQuery(name = "Workstation.findByProcesador", query = "SELECT w FROM Workstation w WHERE w.procesador = :procesador"),
+    @NamedQuery(name = "Workstation.findByMemoria", query = "SELECT w FROM Workstation w WHERE w.memoria = :memoria"),
+    @NamedQuery(name = "Workstation.findByDiscoDuro", query = "SELECT w FROM Workstation w WHERE w.discoDuro = :discoDuro"),
+    @NamedQuery(name = "Workstation.findByTarjetaVideo", query = "SELECT w FROM Workstation w WHERE w.tarjetaVideo = :tarjetaVideo"),
+    @NamedQuery(name = "Workstation.findByPuertos", query = "SELECT w FROM Workstation w WHERE w.puertos = :puertos"),
+    @NamedQuery(name = "Workstation.findByResolucionMonitor", query = "SELECT w FROM Workstation w WHERE w.resolucionMonitor = :resolucionMonitor"),
+    @NamedQuery(name = "Workstation.findByUnidadOptica", query = "SELECT w FROM Workstation w WHERE w.unidadOptica = :unidadOptica"),
+    @NamedQuery(name = "Workstation.findByDescripcion", query = "SELECT w FROM Workstation w WHERE w.descripcion = :descripcion"),
+    @NamedQuery(name = "Workstation.findByDireccionIP", query = "SELECT w FROM Workstation w WHERE w.direccionIP = :direccionIP"),
+    @NamedQuery(name = "Workstation.findByArquitectura", query = "SELECT w FROM Workstation w WHERE w.arquitectura = :arquitectura"),
+    @NamedQuery(name = "Workstation.findByCostoTotal", query = "SELECT w FROM Workstation w WHERE w.costoTotal = :costoTotal"),
+    @NamedQuery(name = "Workstation.findByDepreciacion", query = "SELECT w FROM Workstation w WHERE w.depreciacion = :depreciacion")})
 public class Workstation implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -68,11 +82,14 @@ public class Workstation implements Serializable {
     @Size(max = 45)
     @Column(name = "arquitectura")
     private String arquitectura;
-    @JoinColumns({
-        @JoinColumn(name = "IT_item_it_serie", referencedColumnName = "it_serie"),
-        @JoinColumn(name = "IT_item_it_marca", referencedColumnName = "it_marca")})
-    @ManyToOne(optional = false)
-    private ItItem itItem;
+    @Size(max = 45)
+    @Column(name = "CostoTotal")
+    private String costoTotal;
+    @Size(max = 45)
+    @Column(name = "depreciacion")
+    private String depreciacion;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "workstationidWorkstation")
+    private Collection<Computadora> computadoraCollection;
 
     public Workstation() {
     }
@@ -169,12 +186,29 @@ public class Workstation implements Serializable {
         this.arquitectura = arquitectura;
     }
 
-    public ItItem getItItem() {
-        return itItem;
+    public String getCostoTotal() {
+        return costoTotal;
     }
 
-    public void setItItem(ItItem itItem) {
-        this.itItem = itItem;
+    public void setCostoTotal(String costoTotal) {
+        this.costoTotal = costoTotal;
+    }
+
+    public String getDepreciacion() {
+        return depreciacion;
+    }
+
+    public void setDepreciacion(String depreciacion) {
+        this.depreciacion = depreciacion;
+    }
+
+    @XmlTransient
+    public Collection<Computadora> getComputadoraCollection() {
+        return computadoraCollection;
+    }
+
+    public void setComputadoraCollection(Collection<Computadora> computadoraCollection) {
+        this.computadoraCollection = computadoraCollection;
     }
 
     @Override
@@ -199,7 +233,7 @@ public class Workstation implements Serializable {
 
     @Override
     public String toString() {
-        return "JPA.Entidades.Workstation[ idWorkstation=" + idWorkstation + " ]";
+        return "Entidades.Workstation[ idWorkstation=" + idWorkstation + " ]";
     }
     
 }

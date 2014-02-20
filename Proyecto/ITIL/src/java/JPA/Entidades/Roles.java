@@ -29,7 +29,10 @@ import javax.xml.bind.annotation.XmlTransient;
 @Table(name = "roles")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Roles.findAll", query = "SELECT r FROM Roles r")})
+    @NamedQuery(name = "Roles.findAll", query = "SELECT r FROM Roles r"),
+    @NamedQuery(name = "Roles.findByRolidRol", query = "SELECT r FROM Roles r WHERE r.rolidRol = :rolidRol"),
+    @NamedQuery(name = "Roles.findByRolNombre", query = "SELECT r FROM Roles r WHERE r.rolNombre = :rolNombre"),
+    @NamedQuery(name = "Roles.findByRolDescripcion", query = "SELECT r FROM Roles r WHERE r.rolDescripcion = :rolDescripcion")})
 public class Roles implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -109,7 +112,7 @@ public class Roles implements Serializable {
 
     @Override
     public String toString() {
-        return "JPA.Entidades.Roles[ rolidRol=" + rolidRol + " ]";
+        return "Entidades.Roles[ rolidRol=" + rolidRol + " ]";
     }
     
 }

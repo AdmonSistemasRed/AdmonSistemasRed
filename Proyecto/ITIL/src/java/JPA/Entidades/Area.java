@@ -13,6 +13,8 @@ import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
@@ -30,7 +32,10 @@ import javax.xml.bind.annotation.XmlTransient;
 @Table(name = "area")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Area.findAll", query = "SELECT a FROM Area a")})
+    @NamedQuery(name = "Area.findAll", query = "SELECT a FROM Area a"),
+    @NamedQuery(name = "Area.findByAreidArea", query = "SELECT a FROM Area a WHERE a.areidArea = :areidArea"),
+    @NamedQuery(name = "Area.findByAreNombre", query = "SELECT a FROM Area a WHERE a.areNombre = :areNombre"),
+    @NamedQuery(name = "Area.findByAreDespcripcion", query = "SELECT a FROM Area a WHERE a.areDespcripcion = :areDespcripcion")})
 public class Area implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -46,9 +51,10 @@ public class Area implements Serializable {
     @Column(name = "are_despcripcion")
     private String areDespcripcion;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "areaareidArea")
-    private Collection<Empleado> empleadoCollection;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "areaareidArea")
     private Collection<Depto> deptoCollection;
+    @JoinColumn(name = "Sucursal_Sucursal_idSucursal", referencedColumnName = "Sucursal_idSucursal")
+    @ManyToOne(optional = false)
+    private Sucursal sucursalSucursalidSucursal;
 
     public Area() {
     }
@@ -82,21 +88,20 @@ public class Area implements Serializable {
     }
 
     @XmlTransient
-    public Collection<Empleado> getEmpleadoCollection() {
-        return empleadoCollection;
-    }
-
-    public void setEmpleadoCollection(Collection<Empleado> empleadoCollection) {
-        this.empleadoCollection = empleadoCollection;
-    }
-
-    @XmlTransient
     public Collection<Depto> getDeptoCollection() {
         return deptoCollection;
     }
 
     public void setDeptoCollection(Collection<Depto> deptoCollection) {
         this.deptoCollection = deptoCollection;
+    }
+
+    public Sucursal getSucursalSucursalidSucursal() {
+        return sucursalSucursalidSucursal;
+    }
+
+    public void setSucursalSucursalidSucursal(Sucursal sucursalSucursalidSucursal) {
+        this.sucursalSucursalidSucursal = sucursalSucursalidSucursal;
     }
 
     @Override
@@ -121,7 +126,7 @@ public class Area implements Serializable {
 
     @Override
     public String toString() {
-        return "JPA.Entidades.Area[ areidArea=" + areidArea + " ]";
+        return "Entidades.Area[ areidArea=" + areidArea + " ]";
     }
     
 }

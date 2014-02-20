@@ -28,7 +28,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Table(name = "depto")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Depto.findAll", query = "SELECT d FROM Depto d")})
+    @NamedQuery(name = "Depto.findAll", query = "SELECT d FROM Depto d"),
+    @NamedQuery(name = "Depto.findByDepDepartamento", query = "SELECT d FROM Depto d WHERE d.depDepartamento = :depDepartamento"),
+    @NamedQuery(name = "Depto.findByDepNombre", query = "SELECT d FROM Depto d WHERE d.depNombre = :depNombre"),
+    @NamedQuery(name = "Depto.findByDepDescripcion", query = "SELECT d FROM Depto d WHERE d.depDescripcion = :depDescripcion")})
 public class Depto implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -108,7 +111,7 @@ public class Depto implements Serializable {
 
     @Override
     public String toString() {
-        return "JPA.Entidades.Depto[ depDepartamento=" + depDepartamento + " ]";
+        return "Entidades.Depto[ depDepartamento=" + depDepartamento + " ]";
     }
     
 }

@@ -8,17 +8,18 @@ package JPA.Entidades;
 
 import java.io.Serializable;
 import java.util.Collection;
+import javax.persistence.Basic;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
 import javax.xml.bind.annotation.XmlTransient;
@@ -31,127 +32,80 @@ import javax.xml.bind.annotation.XmlTransient;
 @Table(name = "it_item")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "ItItem.findAll", query = "SELECT i FROM ItItem i")})
+    @NamedQuery(name = "ItItem.findAll", query = "SELECT i FROM ItItem i"),
+    @NamedQuery(name = "ItItem.findByItSerie", query = "SELECT i FROM ItItem i WHERE i.itSerie = :itSerie")})
 public class ItItem implements Serializable {
     private static final long serialVersionUID = 1L;
-    @EmbeddedId
-    protected ItItemPK itItemPK;
-    @Size(max = 45)
-    @Column(name = "modelo")
-    private String modelo;
-    @JoinTable(name = "it_item_has_empleado", joinColumns = {
-        @JoinColumn(name = "IT_item_it_serie", referencedColumnName = "it_serie"),
-        @JoinColumn(name = "IT_item_it_marca", referencedColumnName = "it_marca")}, inverseJoinColumns = {
-        @JoinColumn(name = "empleado_emp_NoEmpleado", referencedColumnName = "emp_NoEmpleado")})
-    @ManyToMany
-    private Collection<Empleado> empleadoCollection;
+    @Id
+    @Basic(optional = false)
+    @NotNull
+    @Size(min = 1, max = 30)
+    @Column(name = "it_serie")
+    private String itSerie;
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "itItem")
-    private Collection<Servidor> servidorCollection;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "itItem")
-    private Collection<Software> softwareCollection;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "itItem")
-    private Collection<Telecommunications> telecommunicationsCollection;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "itItem")
-    private Collection<Perifericos> perifericosCollection;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "itItem")
-    private Collection<Laptops> laptopsCollection;
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "itItem")
-    private Collection<Workstation> workstationCollection;
+    private Collection<ItItemHasEmpleado> itItemHasEmpleadoCollection;
+    @JoinColumn(name = "Computadora_idComputadora", referencedColumnName = "idComputadora")
+    @ManyToOne(optional = false)
+    private Computadora computadoraidComputadora;
+    @JoinColumn(name = "Telecommunications_idTelecom", referencedColumnName = "idTelecom")
+    @ManyToOne(optional = false)
+    private Telecommunications telecommunicationsidTelecom;
+    @JoinColumn(name = "Perifericos_idPeriferico", referencedColumnName = "idPeriferico")
+    @ManyToOne(optional = false)
+    private Perifericos perifericosidPeriferico;
 
     public ItItem() {
     }
 
-    public ItItem(ItItemPK itItemPK) {
-        this.itItemPK = itItemPK;
+    public ItItem(String itSerie) {
+        this.itSerie = itSerie;
     }
 
-    public ItItem(String itSerie, String itMarca) {
-        this.itItemPK = new ItItemPK(itSerie, itMarca);
+    public String getItSerie() {
+        return itSerie;
     }
 
-    public ItItemPK getItItemPK() {
-        return itItemPK;
-    }
-
-    public void setItItemPK(ItItemPK itItemPK) {
-        this.itItemPK = itItemPK;
-    }
-
-    public String getModelo() {
-        return modelo;
-    }
-
-    public void setModelo(String modelo) {
-        this.modelo = modelo;
+    public void setItSerie(String itSerie) {
+        this.itSerie = itSerie;
     }
 
     @XmlTransient
-    public Collection<Empleado> getEmpleadoCollection() {
-        return empleadoCollection;
+    public Collection<ItItemHasEmpleado> getItItemHasEmpleadoCollection() {
+        return itItemHasEmpleadoCollection;
     }
 
-    public void setEmpleadoCollection(Collection<Empleado> empleadoCollection) {
-        this.empleadoCollection = empleadoCollection;
+    public void setItItemHasEmpleadoCollection(Collection<ItItemHasEmpleado> itItemHasEmpleadoCollection) {
+        this.itItemHasEmpleadoCollection = itItemHasEmpleadoCollection;
     }
 
-    @XmlTransient
-    public Collection<Servidor> getServidorCollection() {
-        return servidorCollection;
+    public Computadora getComputadoraidComputadora() {
+        return computadoraidComputadora;
     }
 
-    public void setServidorCollection(Collection<Servidor> servidorCollection) {
-        this.servidorCollection = servidorCollection;
+    public void setComputadoraidComputadora(Computadora computadoraidComputadora) {
+        this.computadoraidComputadora = computadoraidComputadora;
     }
 
-    @XmlTransient
-    public Collection<Software> getSoftwareCollection() {
-        return softwareCollection;
+    public Telecommunications getTelecommunicationsidTelecom() {
+        return telecommunicationsidTelecom;
     }
 
-    public void setSoftwareCollection(Collection<Software> softwareCollection) {
-        this.softwareCollection = softwareCollection;
+    public void setTelecommunicationsidTelecom(Telecommunications telecommunicationsidTelecom) {
+        this.telecommunicationsidTelecom = telecommunicationsidTelecom;
     }
 
-    @XmlTransient
-    public Collection<Telecommunications> getTelecommunicationsCollection() {
-        return telecommunicationsCollection;
+    public Perifericos getPerifericosidPeriferico() {
+        return perifericosidPeriferico;
     }
 
-    public void setTelecommunicationsCollection(Collection<Telecommunications> telecommunicationsCollection) {
-        this.telecommunicationsCollection = telecommunicationsCollection;
-    }
-
-    @XmlTransient
-    public Collection<Perifericos> getPerifericosCollection() {
-        return perifericosCollection;
-    }
-
-    public void setPerifericosCollection(Collection<Perifericos> perifericosCollection) {
-        this.perifericosCollection = perifericosCollection;
-    }
-
-    @XmlTransient
-    public Collection<Laptops> getLaptopsCollection() {
-        return laptopsCollection;
-    }
-
-    public void setLaptopsCollection(Collection<Laptops> laptopsCollection) {
-        this.laptopsCollection = laptopsCollection;
-    }
-
-    @XmlTransient
-    public Collection<Workstation> getWorkstationCollection() {
-        return workstationCollection;
-    }
-
-    public void setWorkstationCollection(Collection<Workstation> workstationCollection) {
-        this.workstationCollection = workstationCollection;
+    public void setPerifericosidPeriferico(Perifericos perifericosidPeriferico) {
+        this.perifericosidPeriferico = perifericosidPeriferico;
     }
 
     @Override
     public int hashCode() {
         int hash = 0;
-        hash += (itItemPK != null ? itItemPK.hashCode() : 0);
+        hash += (itSerie != null ? itSerie.hashCode() : 0);
         return hash;
     }
 
@@ -162,7 +116,7 @@ public class ItItem implements Serializable {
             return false;
         }
         ItItem other = (ItItem) object;
-        if ((this.itItemPK == null && other.itItemPK != null) || (this.itItemPK != null && !this.itItemPK.equals(other.itItemPK))) {
+        if ((this.itSerie == null && other.itSerie != null) || (this.itSerie != null && !this.itSerie.equals(other.itSerie))) {
             return false;
         }
         return true;
@@ -170,7 +124,7 @@ public class ItItem implements Serializable {
 
     @Override
     public String toString() {
-        return "JPA.Entidades.ItItem[ itItemPK=" + itItemPK + " ]";
+        return "Entidades.ItItem[ itSerie=" + itSerie + " ]";
     }
     
 }

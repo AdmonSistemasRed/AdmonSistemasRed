@@ -22,6 +22,7 @@ import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.transaction.UserTransaction;
 
 /**
  *
@@ -30,11 +31,11 @@ import javax.persistence.Persistence;
 public class LenguajeJpaController implements Serializable {
 
     public LenguajeJpaController() {
- }
+    }
     private EntityManagerFactory emf = null;
 
     public EntityManager getEntityManager() {
-        emf = Persistence.createEntityManagerFactory("It_ITILPU");
+        emf = Persistence.createEntityManagerFactory("ITILPU");
         return emf.createEntityManager();
     }
 
@@ -44,7 +45,7 @@ public class LenguajeJpaController implements Serializable {
         }
         EntityManager em = null;
         try {
-          em = getEntityManager();
+            em = getEntityManager();
             em.getTransaction().begin();
             Collection<Empleado> attachedEmpleadoCollection = new ArrayList<Empleado>();
             for (Empleado empleadoCollectionEmpleadoToAttach : lenguaje.getEmpleadoCollection()) {
@@ -78,7 +79,7 @@ public class LenguajeJpaController implements Serializable {
     public void edit(Lenguaje lenguaje) throws NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
-          em = getEntityManager();
+            em = getEntityManager();
             em.getTransaction().begin();
             Lenguaje persistentLenguaje = em.find(Lenguaje.class, lenguaje.getLenLenguaje());
             Collection<Empleado> empleadoCollectionOld = persistentLenguaje.getEmpleadoCollection();
@@ -128,7 +129,7 @@ public class LenguajeJpaController implements Serializable {
     public void destroy(String id) throws NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
-          em = getEntityManager();
+            em = getEntityManager();
             em.getTransaction().begin();
             Lenguaje lenguaje;
             try {

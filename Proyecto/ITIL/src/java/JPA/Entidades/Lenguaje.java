@@ -29,7 +29,9 @@ import javax.xml.bind.annotation.XmlTransient;
 @Table(name = "lenguaje")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Lenguaje.findAll", query = "SELECT l FROM Lenguaje l")})
+    @NamedQuery(name = "Lenguaje.findAll", query = "SELECT l FROM Lenguaje l"),
+    @NamedQuery(name = "Lenguaje.findByLenLenguaje", query = "SELECT l FROM Lenguaje l WHERE l.lenLenguaje = :lenLenguaje"),
+    @NamedQuery(name = "Lenguaje.findByLenNombre", query = "SELECT l FROM Lenguaje l WHERE l.lenNombre = :lenNombre")})
 public class Lenguaje implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -98,7 +100,7 @@ public class Lenguaje implements Serializable {
 
     @Override
     public String toString() {
-        return "JPA.Entidades.Lenguaje[ lenLenguaje=" + lenLenguaje + " ]";
+        return "Entidades.Lenguaje[ lenLenguaje=" + lenLenguaje + " ]";
     }
     
 }

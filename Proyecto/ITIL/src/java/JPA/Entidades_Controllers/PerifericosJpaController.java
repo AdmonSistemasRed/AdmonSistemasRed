@@ -13,13 +13,17 @@ import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
 import JPA.Entidades.ItItem;
 import JPA.Entidades.Perifericos;
+import JPA.Entidades_Controllers.exceptions.IllegalOrphanException;
 import JPA.Entidades_Controllers.exceptions.NonexistentEntityException;
 import JPA.Entidades_Controllers.exceptions.PreexistingEntityException;
 import JPA.Entidades_Controllers.exceptions.RollbackFailureException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.transaction.UserTransaction;
 
 /**
  *
@@ -32,23 +36,33 @@ public class PerifericosJpaController implements Serializable {
     private EntityManagerFactory emf = null;
 
     public EntityManager getEntityManager() {
-        emf = Persistence.createEntityManagerFactory("It_ITILPU");
+        emf = Persistence.createEntityManagerFactory("ITILPU");
         return emf.createEntityManager();
     }
+
     public void create(Perifericos perifericos) throws PreexistingEntityException, RollbackFailureException, Exception {
+        if (perifericos.getItItemCollection() == null) {
+            perifericos.setItItemCollection(new ArrayList<ItItem>());
+        }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            ItItem itItem = perifericos.getItItem();
-            if (itItem != null) {
-                itItem = em.getReference(itItem.getClass(), itItem.getItItemPK());
-                perifericos.setItItem(itItem);
+            Collection<ItItem> attachedItItemCollection = new ArrayList<ItItem>();
+            for (ItItem itItemCollectionItItemToAttach : perifericos.getItItemCollection()) {
+                itItemCollectionItItemToAttach = em.getReference(itItemCollectionItItemToAttach.getClass(), itItemCollectionItItemToAttach.getItSerie());
+                attachedItItemCollection.add(itItemCollectionItItemToAttach);
             }
+            perifericos.setItItemCollection(attachedItItemCollection);
             em.persist(perifericos);
-            if (itItem != null) {
-                itItem.getPerifericosCollection().add(perifericos);
-                itItem = em.merge(itItem);
+            for (ItItem itItemCollectionItItem : perifericos.getItItemCollection()) {
+                Perifericos oldPerifericosidPerifericoOfItItemCollectionItItem = itItemCollectionItItem.getPerifericosidPeriferico();
+                itItemCollectionItItem.setPerifericosidPeriferico(perifericos);
+                itItemCollectionItItem = em.merge(itItemCollectionItItem);
+                if (oldPerifericosidPerifericoOfItItemCollectionItItem != null) {
+                    oldPerifericosidPerifericoOfItItemCollectionItItem.getItItemCollection().remove(itItemCollectionItItem);
+                    oldPerifericosidPerifericoOfItItemCollectionItItem = em.merge(oldPerifericosidPerifericoOfItItemCollectionItItem);
+                }
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -68,26 +82,44 @@ public class PerifericosJpaController implements Serializable {
         }
     }
 
-    public void edit(Perifericos perifericos) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void edit(Perifericos perifericos) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
             Perifericos persistentPerifericos = em.find(Perifericos.class, perifericos.getIdPeriferico());
-            ItItem itItemOld = persistentPerifericos.getItItem();
-            ItItem itItemNew = perifericos.getItItem();
-            if (itItemNew != null) {
-                itItemNew = em.getReference(itItemNew.getClass(), itItemNew.getItItemPK());
-                perifericos.setItItem(itItemNew);
+            Collection<ItItem> itItemCollectionOld = persistentPerifericos.getItItemCollection();
+            Collection<ItItem> itItemCollectionNew = perifericos.getItItemCollection();
+            List<String> illegalOrphanMessages = null;
+            for (ItItem itItemCollectionOldItItem : itItemCollectionOld) {
+                if (!itItemCollectionNew.contains(itItemCollectionOldItItem)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain ItItem " + itItemCollectionOldItItem + " since its perifericosidPeriferico field is not nullable.");
+                }
             }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
+            }
+            Collection<ItItem> attachedItItemCollectionNew = new ArrayList<ItItem>();
+            for (ItItem itItemCollectionNewItItemToAttach : itItemCollectionNew) {
+                itItemCollectionNewItItemToAttach = em.getReference(itItemCollectionNewItItemToAttach.getClass(), itItemCollectionNewItItemToAttach.getItSerie());
+                attachedItItemCollectionNew.add(itItemCollectionNewItItemToAttach);
+            }
+            itItemCollectionNew = attachedItItemCollectionNew;
+            perifericos.setItItemCollection(itItemCollectionNew);
             perifericos = em.merge(perifericos);
-            if (itItemOld != null && !itItemOld.equals(itItemNew)) {
-                itItemOld.getPerifericosCollection().remove(perifericos);
-                itItemOld = em.merge(itItemOld);
-            }
-            if (itItemNew != null && !itItemNew.equals(itItemOld)) {
-                itItemNew.getPerifericosCollection().add(perifericos);
-                itItemNew = em.merge(itItemNew);
+            for (ItItem itItemCollectionNewItItem : itItemCollectionNew) {
+                if (!itItemCollectionOld.contains(itItemCollectionNewItItem)) {
+                    Perifericos oldPerifericosidPerifericoOfItItemCollectionNewItItem = itItemCollectionNewItItem.getPerifericosidPeriferico();
+                    itItemCollectionNewItItem.setPerifericosidPeriferico(perifericos);
+                    itItemCollectionNewItItem = em.merge(itItemCollectionNewItItem);
+                    if (oldPerifericosidPerifericoOfItItemCollectionNewItItem != null && !oldPerifericosidPerifericoOfItItemCollectionNewItItem.equals(perifericos)) {
+                        oldPerifericosidPerifericoOfItItemCollectionNewItItem.getItItemCollection().remove(itItemCollectionNewItItem);
+                        oldPerifericosidPerifericoOfItItemCollectionNewItItem = em.merge(oldPerifericosidPerifericoOfItItemCollectionNewItItem);
+                    }
+                }
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -111,7 +143,7 @@ public class PerifericosJpaController implements Serializable {
         }
     }
 
-    public void destroy(String id) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void destroy(String id) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -123,10 +155,16 @@ public class PerifericosJpaController implements Serializable {
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The perifericos with id " + id + " no longer exists.", enfe);
             }
-            ItItem itItem = perifericos.getItItem();
-            if (itItem != null) {
-                itItem.getPerifericosCollection().remove(perifericos);
-                itItem = em.merge(itItem);
+            List<String> illegalOrphanMessages = null;
+            Collection<ItItem> itItemCollectionOrphanCheck = perifericos.getItItemCollection();
+            for (ItItem itItemCollectionOrphanCheckItItem : itItemCollectionOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This Perifericos (" + perifericos + ") cannot be destroyed since the ItItem " + itItemCollectionOrphanCheckItItem + " in its itItemCollection field has a non-nullable perifericosidPeriferico field.");
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
             }
             em.remove(perifericos);
             em.getTransaction().commit();

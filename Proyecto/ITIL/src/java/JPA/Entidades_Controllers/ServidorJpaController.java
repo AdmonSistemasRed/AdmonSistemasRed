@@ -11,15 +11,19 @@ import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import JPA.Entidades.ItItem;
+import JPA.Entidades.Computadora;
 import JPA.Entidades.Servidor;
+import JPA.Entidades_Controllers.exceptions.IllegalOrphanException;
 import JPA.Entidades_Controllers.exceptions.NonexistentEntityException;
 import JPA.Entidades_Controllers.exceptions.PreexistingEntityException;
 import JPA.Entidades_Controllers.exceptions.RollbackFailureException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.transaction.UserTransaction;
 
 /**
  *
@@ -32,24 +36,33 @@ public class ServidorJpaController implements Serializable {
     private EntityManagerFactory emf = null;
 
     public EntityManager getEntityManager() {
-        emf = Persistence.createEntityManagerFactory("It_ITILPU");
+        emf = Persistence.createEntityManagerFactory("ITILPU");
         return emf.createEntityManager();
     }
 
     public void create(Servidor servidor) throws PreexistingEntityException, RollbackFailureException, Exception {
+        if (servidor.getComputadoraCollection() == null) {
+            servidor.setComputadoraCollection(new ArrayList<Computadora>());
+        }
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            ItItem itItem = servidor.getItItem();
-            if (itItem != null) {
-                itItem = em.getReference(itItem.getClass(), itItem.getItItemPK());
-                servidor.setItItem(itItem);
+            Collection<Computadora> attachedComputadoraCollection = new ArrayList<Computadora>();
+            for (Computadora computadoraCollectionComputadoraToAttach : servidor.getComputadoraCollection()) {
+                computadoraCollectionComputadoraToAttach = em.getReference(computadoraCollectionComputadoraToAttach.getClass(), computadoraCollectionComputadoraToAttach.getIdComputadora());
+                attachedComputadoraCollection.add(computadoraCollectionComputadoraToAttach);
             }
+            servidor.setComputadoraCollection(attachedComputadoraCollection);
             em.persist(servidor);
-            if (itItem != null) {
-                itItem.getServidorCollection().add(servidor);
-                itItem = em.merge(itItem);
+            for (Computadora computadoraCollectionComputadora : servidor.getComputadoraCollection()) {
+                Servidor oldServidoridServidorOfComputadoraCollectionComputadora = computadoraCollectionComputadora.getServidoridServidor();
+                computadoraCollectionComputadora.setServidoridServidor(servidor);
+                computadoraCollectionComputadora = em.merge(computadoraCollectionComputadora);
+                if (oldServidoridServidorOfComputadoraCollectionComputadora != null) {
+                    oldServidoridServidorOfComputadoraCollectionComputadora.getComputadoraCollection().remove(computadoraCollectionComputadora);
+                    oldServidoridServidorOfComputadoraCollectionComputadora = em.merge(oldServidoridServidorOfComputadoraCollectionComputadora);
+                }
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -69,26 +82,44 @@ public class ServidorJpaController implements Serializable {
         }
     }
 
-    public void edit(Servidor servidor) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void edit(Servidor servidor) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
             em.getTransaction().begin();
             Servidor persistentServidor = em.find(Servidor.class, servidor.getIdServidor());
-            ItItem itItemOld = persistentServidor.getItItem();
-            ItItem itItemNew = servidor.getItItem();
-            if (itItemNew != null) {
-                itItemNew = em.getReference(itItemNew.getClass(), itItemNew.getItItemPK());
-                servidor.setItItem(itItemNew);
+            Collection<Computadora> computadoraCollectionOld = persistentServidor.getComputadoraCollection();
+            Collection<Computadora> computadoraCollectionNew = servidor.getComputadoraCollection();
+            List<String> illegalOrphanMessages = null;
+            for (Computadora computadoraCollectionOldComputadora : computadoraCollectionOld) {
+                if (!computadoraCollectionNew.contains(computadoraCollectionOldComputadora)) {
+                    if (illegalOrphanMessages == null) {
+                        illegalOrphanMessages = new ArrayList<String>();
+                    }
+                    illegalOrphanMessages.add("You must retain Computadora " + computadoraCollectionOldComputadora + " since its servidoridServidor field is not nullable.");
+                }
             }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
+            }
+            Collection<Computadora> attachedComputadoraCollectionNew = new ArrayList<Computadora>();
+            for (Computadora computadoraCollectionNewComputadoraToAttach : computadoraCollectionNew) {
+                computadoraCollectionNewComputadoraToAttach = em.getReference(computadoraCollectionNewComputadoraToAttach.getClass(), computadoraCollectionNewComputadoraToAttach.getIdComputadora());
+                attachedComputadoraCollectionNew.add(computadoraCollectionNewComputadoraToAttach);
+            }
+            computadoraCollectionNew = attachedComputadoraCollectionNew;
+            servidor.setComputadoraCollection(computadoraCollectionNew);
             servidor = em.merge(servidor);
-            if (itItemOld != null && !itItemOld.equals(itItemNew)) {
-                itItemOld.getServidorCollection().remove(servidor);
-                itItemOld = em.merge(itItemOld);
-            }
-            if (itItemNew != null && !itItemNew.equals(itItemOld)) {
-                itItemNew.getServidorCollection().add(servidor);
-                itItemNew = em.merge(itItemNew);
+            for (Computadora computadoraCollectionNewComputadora : computadoraCollectionNew) {
+                if (!computadoraCollectionOld.contains(computadoraCollectionNewComputadora)) {
+                    Servidor oldServidoridServidorOfComputadoraCollectionNewComputadora = computadoraCollectionNewComputadora.getServidoridServidor();
+                    computadoraCollectionNewComputadora.setServidoridServidor(servidor);
+                    computadoraCollectionNewComputadora = em.merge(computadoraCollectionNewComputadora);
+                    if (oldServidoridServidorOfComputadoraCollectionNewComputadora != null && !oldServidoridServidorOfComputadoraCollectionNewComputadora.equals(servidor)) {
+                        oldServidoridServidorOfComputadoraCollectionNewComputadora.getComputadoraCollection().remove(computadoraCollectionNewComputadora);
+                        oldServidoridServidorOfComputadoraCollectionNewComputadora = em.merge(oldServidoridServidorOfComputadoraCollectionNewComputadora);
+                    }
+                }
             }
             em.getTransaction().commit();
         } catch (Exception ex) {
@@ -112,7 +143,7 @@ public class ServidorJpaController implements Serializable {
         }
     }
 
-    public void destroy(String id) throws NonexistentEntityException, RollbackFailureException, Exception {
+    public void destroy(String id) throws IllegalOrphanException, NonexistentEntityException, RollbackFailureException, Exception {
         EntityManager em = null;
         try {
             em = getEntityManager();
@@ -124,10 +155,16 @@ public class ServidorJpaController implements Serializable {
             } catch (EntityNotFoundException enfe) {
                 throw new NonexistentEntityException("The servidor with id " + id + " no longer exists.", enfe);
             }
-            ItItem itItem = servidor.getItItem();
-            if (itItem != null) {
-                itItem.getServidorCollection().remove(servidor);
-                itItem = em.merge(itItem);
+            List<String> illegalOrphanMessages = null;
+            Collection<Computadora> computadoraCollectionOrphanCheck = servidor.getComputadoraCollection();
+            for (Computadora computadoraCollectionOrphanCheckComputadora : computadoraCollectionOrphanCheck) {
+                if (illegalOrphanMessages == null) {
+                    illegalOrphanMessages = new ArrayList<String>();
+                }
+                illegalOrphanMessages.add("This Servidor (" + servidor + ") cannot be destroyed since the Computadora " + computadoraCollectionOrphanCheckComputadora + " in its computadoraCollection field has a non-nullable servidoridServidor field.");
+            }
+            if (illegalOrphanMessages != null) {
+                throw new IllegalOrphanException(illegalOrphanMessages);
             }
             em.remove(servidor);
             em.getTransaction().commit();

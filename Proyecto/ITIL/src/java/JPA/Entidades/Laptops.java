@@ -7,19 +7,20 @@
 package JPA.Entidades;
 
 import java.io.Serializable;
+import java.util.Collection;
 import javax.persistence.Basic;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinColumns;
-import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import javax.xml.bind.annotation.XmlRootElement;
+import javax.xml.bind.annotation.XmlTransient;
 
 /**
  *
@@ -29,7 +30,20 @@ import javax.xml.bind.annotation.XmlRootElement;
 @Table(name = "laptops")
 @XmlRootElement
 @NamedQueries({
-    @NamedQuery(name = "Laptops.findAll", query = "SELECT l FROM Laptops l")})
+    @NamedQuery(name = "Laptops.findAll", query = "SELECT l FROM Laptops l"),
+    @NamedQuery(name = "Laptops.findByIdLaptop", query = "SELECT l FROM Laptops l WHERE l.idLaptop = :idLaptop"),
+    @NamedQuery(name = "Laptops.findByProcesador", query = "SELECT l FROM Laptops l WHERE l.procesador = :procesador"),
+    @NamedQuery(name = "Laptops.findByMemoria", query = "SELECT l FROM Laptops l WHERE l.memoria = :memoria"),
+    @NamedQuery(name = "Laptops.findByDuracionBateria", query = "SELECT l FROM Laptops l WHERE l.duracionBateria = :duracionBateria"),
+    @NamedQuery(name = "Laptops.findByDiscoDuro", query = "SELECT l FROM Laptops l WHERE l.discoDuro = :discoDuro"),
+    @NamedQuery(name = "Laptops.findByResolucionPantalla", query = "SELECT l FROM Laptops l WHERE l.resolucionPantalla = :resolucionPantalla"),
+    @NamedQuery(name = "Laptops.findByTarjetaVideo", query = "SELECT l FROM Laptops l WHERE l.tarjetaVideo = :tarjetaVideo"),
+    @NamedQuery(name = "Laptops.findByPuerto", query = "SELECT l FROM Laptops l WHERE l.puerto = :puerto"),
+    @NamedQuery(name = "Laptops.findByDescripcion", query = "SELECT l FROM Laptops l WHERE l.descripcion = :descripcion"),
+    @NamedQuery(name = "Laptops.findByDireccionIP", query = "SELECT l FROM Laptops l WHERE l.direccionIP = :direccionIP"),
+    @NamedQuery(name = "Laptops.findByArquitectura", query = "SELECT l FROM Laptops l WHERE l.arquitectura = :arquitectura"),
+    @NamedQuery(name = "Laptops.findByCostoTotal", query = "SELECT l FROM Laptops l WHERE l.costoTotal = :costoTotal"),
+    @NamedQuery(name = "Laptops.findByDepreciacion", query = "SELECT l FROM Laptops l WHERE l.depreciacion = :depreciacion")})
 public class Laptops implements Serializable {
     private static final long serialVersionUID = 1L;
     @Id
@@ -68,11 +82,14 @@ public class Laptops implements Serializable {
     @Size(max = 45)
     @Column(name = "arquitectura")
     private String arquitectura;
-    @JoinColumns({
-        @JoinColumn(name = "IT_item_it_serie", referencedColumnName = "it_serie"),
-        @JoinColumn(name = "IT_item_it_marca", referencedColumnName = "it_marca")})
-    @ManyToOne(optional = false)
-    private ItItem itItem;
+    @Size(max = 45)
+    @Column(name = "costoTotal")
+    private String costoTotal;
+    @Size(max = 45)
+    @Column(name = "depreciacion")
+    private String depreciacion;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "laptopsidLaptop")
+    private Collection<Computadora> computadoraCollection;
 
     public Laptops() {
     }
@@ -169,12 +186,29 @@ public class Laptops implements Serializable {
         this.arquitectura = arquitectura;
     }
 
-    public ItItem getItItem() {
-        return itItem;
+    public String getCostoTotal() {
+        return costoTotal;
     }
 
-    public void setItItem(ItItem itItem) {
-        this.itItem = itItem;
+    public void setCostoTotal(String costoTotal) {
+        this.costoTotal = costoTotal;
+    }
+
+    public String getDepreciacion() {
+        return depreciacion;
+    }
+
+    public void setDepreciacion(String depreciacion) {
+        this.depreciacion = depreciacion;
+    }
+
+    @XmlTransient
+    public Collection<Computadora> getComputadoraCollection() {
+        return computadoraCollection;
+    }
+
+    public void setComputadoraCollection(Collection<Computadora> computadoraCollection) {
+        this.computadoraCollection = computadoraCollection;
     }
 
     @Override
@@ -199,7 +233,7 @@ public class Laptops implements Serializable {
 
     @Override
     public String toString() {
-        return "JPA.Entidades.Laptops[ idLaptop=" + idLaptop + " ]";
+        return "Entidades.Laptops[ idLaptop=" + idLaptop + " ]";
     }
     
 }

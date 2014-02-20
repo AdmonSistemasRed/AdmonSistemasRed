@@ -12,18 +12,19 @@ import javax.persistence.Query;
 import javax.persistence.EntityNotFoundException;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import JPA.Entidades.Empleado;
-import java.util.ArrayList;
-import java.util.Collection;
+import JPA.Entidades.Sucursal;
 import JPA.Entidades.Depto;
 import JPA.Entidades_Controllers.exceptions.IllegalOrphanException;
 import JPA.Entidades_Controllers.exceptions.NonexistentEntityException;
 import JPA.Entidades_Controllers.exceptions.PreexistingEntityException;
 import JPA.Entidades_Controllers.exceptions.RollbackFailureException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
+import javax.transaction.UserTransaction;
 
 /**
  *
@@ -33,18 +34,14 @@ public class AreaJpaController implements Serializable {
 
     public AreaJpaController() {
     }
-    
     private EntityManagerFactory emf = null;
 
-    private EntityManager getEntityManager() {
-        emf = Persistence.createEntityManagerFactory("It_ITILPU");
+    public EntityManager getEntityManager() {
+        emf = Persistence.createEntityManagerFactory("ITILPU");
         return emf.createEntityManager();
     }
 
     public void create(Area area) throws PreexistingEntityException, RollbackFailureException, Exception {
-        if (area.getEmpleadoCollection() == null) {
-            area.setEmpleadoCollection(new ArrayList<Empleado>());
-        }
         if (area.getDeptoCollection() == null) {
             area.setDeptoCollection(new ArrayList<Depto>());
         }
@@ -52,12 +49,11 @@ public class AreaJpaController implements Serializable {
         try {
             em = getEntityManager();
             em.getTransaction().begin();
-            Collection<Empleado> attachedEmpleadoCollection = new ArrayList<Empleado>();
-            for (Empleado empleadoCollectionEmpleadoToAttach : area.getEmpleadoCollection()) {
-                empleadoCollectionEmpleadoToAttach = em.getReference(empleadoCollectionEmpleadoToAttach.getClass(), empleadoCollectionEmpleadoToAttach.getEmpNoEmpleado());
-                attachedEmpleadoCollection.add(empleadoCollectionEmpleadoToAttach);
+            Sucursal sucursalSucursalidSucursal = area.getSucursalSucursalidSucursal();
+            if (sucursalSucursalidSucursal != null) {
+                sucursalSucursalidSucursal = em.getReference(sucursalSucursalidSucursal.getClass(), sucursalSucursalidSucursal.getSucursalidSucursal());
+                area.setSucursalSucursalidSucursal(sucursalSucursalidSucursal);
             }
-            area.setEmpleadoCollection(attachedEmpleadoCollection);
             Collection<Depto> attachedDeptoCollection = new ArrayList<Depto>();
             for (Depto deptoCollectionDeptoToAttach : area.getDeptoCollection()) {
                 deptoCollectionDeptoToAttach = em.getReference(deptoCollectionDeptoToAttach.getClass(), deptoCollectionDeptoToAttach.getDepDepartamento());
@@ -65,14 +61,9 @@ public class AreaJpaController implements Serializable {
             }
             area.setDeptoCollection(attachedDeptoCollection);
             em.persist(area);
-            for (Empleado empleadoCollectionEmpleado : area.getEmpleadoCollection()) {
-                Area oldAreaareidAreaOfEmpleadoCollectionEmpleado = empleadoCollectionEmpleado.getAreaareidArea();
-                empleadoCollectionEmpleado.setAreaareidArea(area);
-                empleadoCollectionEmpleado = em.merge(empleadoCollectionEmpleado);
-                if (oldAreaareidAreaOfEmpleadoCollectionEmpleado != null) {
-                    oldAreaareidAreaOfEmpleadoCollectionEmpleado.getEmpleadoCollection().remove(empleadoCollectionEmpleado);
-                    oldAreaareidAreaOfEmpleadoCollectionEmpleado = em.merge(oldAreaareidAreaOfEmpleadoCollectionEmpleado);
-                }
+            if (sucursalSucursalidSucursal != null) {
+                sucursalSucursalidSucursal.getAreaCollection().add(area);
+                sucursalSucursalidSucursal = em.merge(sucursalSucursalidSucursal);
             }
             for (Depto deptoCollectionDepto : area.getDeptoCollection()) {
                 Area oldAreaareidAreaOfDeptoCollectionDepto = deptoCollectionDepto.getAreaareidArea();
@@ -105,21 +96,13 @@ public class AreaJpaController implements Serializable {
         EntityManager em = null;
         try {
             em = getEntityManager();
-            em.getTransaction().begin();;
+            em.getTransaction().begin();
             Area persistentArea = em.find(Area.class, area.getAreidArea());
-            Collection<Empleado> empleadoCollectionOld = persistentArea.getEmpleadoCollection();
-            Collection<Empleado> empleadoCollectionNew = area.getEmpleadoCollection();
+            Sucursal sucursalSucursalidSucursalOld = persistentArea.getSucursalSucursalidSucursal();
+            Sucursal sucursalSucursalidSucursalNew = area.getSucursalSucursalidSucursal();
             Collection<Depto> deptoCollectionOld = persistentArea.getDeptoCollection();
             Collection<Depto> deptoCollectionNew = area.getDeptoCollection();
             List<String> illegalOrphanMessages = null;
-            for (Empleado empleadoCollectionOldEmpleado : empleadoCollectionOld) {
-                if (!empleadoCollectionNew.contains(empleadoCollectionOldEmpleado)) {
-                    if (illegalOrphanMessages == null) {
-                        illegalOrphanMessages = new ArrayList<String>();
-                    }
-                    illegalOrphanMessages.add("You must retain Empleado " + empleadoCollectionOldEmpleado + " since its areaareidArea field is not nullable.");
-                }
-            }
             for (Depto deptoCollectionOldDepto : deptoCollectionOld) {
                 if (!deptoCollectionNew.contains(deptoCollectionOldDepto)) {
                     if (illegalOrphanMessages == null) {
@@ -131,13 +114,10 @@ public class AreaJpaController implements Serializable {
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
             }
-            Collection<Empleado> attachedEmpleadoCollectionNew = new ArrayList<Empleado>();
-            for (Empleado empleadoCollectionNewEmpleadoToAttach : empleadoCollectionNew) {
-                empleadoCollectionNewEmpleadoToAttach = em.getReference(empleadoCollectionNewEmpleadoToAttach.getClass(), empleadoCollectionNewEmpleadoToAttach.getEmpNoEmpleado());
-                attachedEmpleadoCollectionNew.add(empleadoCollectionNewEmpleadoToAttach);
+            if (sucursalSucursalidSucursalNew != null) {
+                sucursalSucursalidSucursalNew = em.getReference(sucursalSucursalidSucursalNew.getClass(), sucursalSucursalidSucursalNew.getSucursalidSucursal());
+                area.setSucursalSucursalidSucursal(sucursalSucursalidSucursalNew);
             }
-            empleadoCollectionNew = attachedEmpleadoCollectionNew;
-            area.setEmpleadoCollection(empleadoCollectionNew);
             Collection<Depto> attachedDeptoCollectionNew = new ArrayList<Depto>();
             for (Depto deptoCollectionNewDeptoToAttach : deptoCollectionNew) {
                 deptoCollectionNewDeptoToAttach = em.getReference(deptoCollectionNewDeptoToAttach.getClass(), deptoCollectionNewDeptoToAttach.getDepDepartamento());
@@ -146,16 +126,13 @@ public class AreaJpaController implements Serializable {
             deptoCollectionNew = attachedDeptoCollectionNew;
             area.setDeptoCollection(deptoCollectionNew);
             area = em.merge(area);
-            for (Empleado empleadoCollectionNewEmpleado : empleadoCollectionNew) {
-                if (!empleadoCollectionOld.contains(empleadoCollectionNewEmpleado)) {
-                    Area oldAreaareidAreaOfEmpleadoCollectionNewEmpleado = empleadoCollectionNewEmpleado.getAreaareidArea();
-                    empleadoCollectionNewEmpleado.setAreaareidArea(area);
-                    empleadoCollectionNewEmpleado = em.merge(empleadoCollectionNewEmpleado);
-                    if (oldAreaareidAreaOfEmpleadoCollectionNewEmpleado != null && !oldAreaareidAreaOfEmpleadoCollectionNewEmpleado.equals(area)) {
-                        oldAreaareidAreaOfEmpleadoCollectionNewEmpleado.getEmpleadoCollection().remove(empleadoCollectionNewEmpleado);
-                        oldAreaareidAreaOfEmpleadoCollectionNewEmpleado = em.merge(oldAreaareidAreaOfEmpleadoCollectionNewEmpleado);
-                    }
-                }
+            if (sucursalSucursalidSucursalOld != null && !sucursalSucursalidSucursalOld.equals(sucursalSucursalidSucursalNew)) {
+                sucursalSucursalidSucursalOld.getAreaCollection().remove(area);
+                sucursalSucursalidSucursalOld = em.merge(sucursalSucursalidSucursalOld);
+            }
+            if (sucursalSucursalidSucursalNew != null && !sucursalSucursalidSucursalNew.equals(sucursalSucursalidSucursalOld)) {
+                sucursalSucursalidSucursalNew.getAreaCollection().add(area);
+                sucursalSucursalidSucursalNew = em.merge(sucursalSucursalidSucursalNew);
             }
             for (Depto deptoCollectionNewDepto : deptoCollectionNew) {
                 if (!deptoCollectionOld.contains(deptoCollectionNewDepto)) {
@@ -203,13 +180,6 @@ public class AreaJpaController implements Serializable {
                 throw new NonexistentEntityException("The area with id " + id + " no longer exists.", enfe);
             }
             List<String> illegalOrphanMessages = null;
-            Collection<Empleado> empleadoCollectionOrphanCheck = area.getEmpleadoCollection();
-            for (Empleado empleadoCollectionOrphanCheckEmpleado : empleadoCollectionOrphanCheck) {
-                if (illegalOrphanMessages == null) {
-                    illegalOrphanMessages = new ArrayList<String>();
-                }
-                illegalOrphanMessages.add("This Area (" + area + ") cannot be destroyed since the Empleado " + empleadoCollectionOrphanCheckEmpleado + " in its empleadoCollection field has a non-nullable areaareidArea field.");
-            }
             Collection<Depto> deptoCollectionOrphanCheck = area.getDeptoCollection();
             for (Depto deptoCollectionOrphanCheckDepto : deptoCollectionOrphanCheck) {
                 if (illegalOrphanMessages == null) {
@@ -219,6 +189,11 @@ public class AreaJpaController implements Serializable {
             }
             if (illegalOrphanMessages != null) {
                 throw new IllegalOrphanException(illegalOrphanMessages);
+            }
+            Sucursal sucursalSucursalidSucursal = area.getSucursalSucursalidSucursal();
+            if (sucursalSucursalidSucursal != null) {
+                sucursalSucursalidSucursal.getAreaCollection().remove(area);
+                sucursalSucursalidSucursal = em.merge(sucursalSucursalidSucursal);
             }
             em.remove(area);
             em.getTransaction().commit();
